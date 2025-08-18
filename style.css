@@ -71,9 +71,12 @@ button:hover {
     border-radius: 6px;
     padding: 15px;
     margin-bottom: 10px;
+}
+
+.set-item-main {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .set-item-details h3 {
@@ -102,6 +105,7 @@ button:hover {
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .suggestion-box {
