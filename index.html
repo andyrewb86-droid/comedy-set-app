@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comedy Set Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Comedy Set Manager 🎤</h1>
+
+        <div class="card">
+            <h2>Add a New Bit</h2>
+            <form id="add-set-form">
+                <input type="text" id="set-title" placeholder="Title of your bit" required>
+                <input type="number" id="set-length" placeholder="Length (in minutes)" required>
+                <input type="text" id="set-tags" placeholder="Tags (comma, separated)">
+                <button type="submit">Add Bit</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>✨ Setlist Genius (with Gemini)</h2>
+            <p>Describe the gig (audience, venue, vibe) and the desired set length.</p>
+            <textarea id="gig-details" placeholder="e.g., 'Tuesday open mic, rowdy crowd, mostly college kids. Need 7 minutes.'"></textarea>
+            <input type="text" id="gemini-api-key" placeholder="Enter Your Gemini API Key Here">
+            <button id="get-suggestion-btn">Get Setlist Suggestion</button>
+            <div id="gemini-suggestion" class="suggestion-box">
+                Your setlist suggestion will appear here...
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Search Your Sets</h2>
+            <div class="search-controls">
+                <input type="number" id="search-length" placeholder="Search by length (mins)">
+                <input type="text" id="search-tags" placeholder="Search by tag">
+            </div>
+            <div id="set-list-container">
+                </div>
+        </div>
+
+        <div class="card">
+            <h2>Admin: Import & Export</h2>
+            <p>Save a backup of your data or import it on a new device.</p>
+            <div class="admin-buttons">
+                <button id="export-btn">Export Data</button>
+                <button id="import-btn">Import Data</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
+	<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
+    
+	<script src="script.js"></script>
+</body>
+</html>
