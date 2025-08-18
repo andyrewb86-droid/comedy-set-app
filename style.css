@@ -146,3 +146,30 @@ button:hover {
 .toggle-transcription-btn:hover {
     background-color: #4b5158;
 }
+
+/* Styles for Edit/Save buttons */
+.edit-controls {
+    margin-top: 8px;
+    display: flex;
+    gap: 10px;
+}
+
+.edit-btn, .save-btn {
+    background-color: #e4e6eb;
+    color: #050505;
+    padding: 5px 10px;
+    font-size: 0.8em;
+}
+
+.edit-btn:hover, .save-btn:hover {
+    background-color: #dcdde1;
+}
+
+.transcription-edit-area {
+    width: 100%;
+    min-height: 150px;
+    margin-top: 5px;
+    font-family: monospace;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
