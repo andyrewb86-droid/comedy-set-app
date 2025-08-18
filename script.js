@@ -1,14 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- START FIREBASE SETUP ---
-    // PASTE YOUR FIREBASE CONFIG OBJECT FROM THE FIREBASE WEBSITE HERE
+    // MAKE SURE YOUR FIREBASE CONFIG OBJECT IS PASTED HERE
     const firebaseConfig = {
-  apiKey: "AIzaSyAl55bFL__bGedFYLXFDHGt47tDi90WRpY",
-  authDomain: "comedy-set-manager.firebaseapp.com",
-  projectId: "comedy-set-manager",
-  storageBucket: "comedy-set-manager.firebasestorage.app",
-  messagingSenderId: "404723429589",
-  appId: "1:404723429589:web:b33169169b1401f47d325c"
-};
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
@@ -16,11 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const setsCollection = db.collection('sets'); // Reference to our 'sets' collection
     // --- END FIREBASE SETUP ---
 
-    // DOM Elements (same as before)
+    // DOM Elements
     const addSetForm = document.getElementById('add-set-form');
     const setTitleInput = document.getElementById('set-title');
     const setLengthInput = document.getElementById('set-length');
     const setTagsInput = document.getElementById('set-tags');
+    const setTranscriptionInput = document.getElementById('set-transcription'); // New element
     const setListContainer = document.getElementById('set-list-container');
     const searchLengthInput = document.getElementById('search-length');
     const searchTagsInput = document.getElementById('search-tags');
@@ -32,15 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const geminiApiKeyInput = document.getElementById('gemini-api-key');
     const geminiSuggestionBox = document.getElementById('gemini-suggestion');
 
-    // This array will hold our sets, populated from Firebase
     let comedySets = [];
 
-    /**
-     * Renders the list of comedy sets to the UI.
-     * @param {Array} setsToRender - The array of sets to display.
-     */
     const renderSets = (setsToRender) => {
-        setListContainer.innerHTML = ''; // Clear the current list
+        setListContainer.innerHTML = ''; 
         if (setsToRender.length === 0) {
             setListContainer.innerHTML = '<p>No bits found. Try adding some!</p>';
             return;
@@ -49,22 +45,26 @@ document.addEventListener('DOMContentLoaded', () => {
         setsToRender.forEach((set) => {
             const setElement = document.createElement('div');
             setElement.classList.add('set-item');
-            // We store the unique database ID on the delete button now
+            
+            // New HTML structure for each item
             setElement.innerHTML = `
-                <div class="set-item-details">
-                    <h3>${set.title}</h3>
-                    <p>Length: ${set.length} min</p>
-                    <p>Tags: ${set.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}</p>
+                <div class="set-item-main">
+                    <div class="set-item-details">
+                        <h3>${set.title}</h3>
+                        <p>Length: ${set.length} min</p>
+                        <p>Tags: ${set.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}</p>
+                    </div>
+                    <button class="delete-btn" data-id="${set.id}">Delete</button>
                 </div>
-                <button class="delete-btn" data-id="${set.id}">Delete</button>
+                ${set.transcription ? `<button class="toggle-transcription-btn" data-target-id="transcription-${set.id}">Show Transcription</button>` : ''}
+                <div class="transcription-area hidden" id="transcription-${set.id}">
+                    <p>${set.transcription || ''}</p>
+                </div>
             `;
             setListContainer.appendChild(setElement);
         });
     };
     
-    /**
-     * Filters and re-renders the sets based on search criteria.
-     */
     const filterAndRender = () => {
         const lengthQuery = parseFloat(searchLengthInput.value);
         const tagsQuery = searchTagsInput.value.toLowerCase().trim();
@@ -78,49 +78,55 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSets(filteredSets);
     };
 
-    // --- NEW: Real-time data listener from Firebase ---
     setsCollection.orderBy('title').onSnapshot(snapshot => {
         comedySets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        filterAndRender(); // Re-render whenever data changes
+        filterAndRender(); 
     });
 
-    // --- UPDATED Event Listeners ---
-
-    // Add a new set to Firebase
+    // UPDATED: Add a new set to Firebase
     addSetForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const title = setTitleInput.value.trim();
         const length = parseFloat(setLengthInput.value);
         const tags = setTagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+        const transcription = setTranscriptionInput.value.trim(); // Get transcription value
 
         if (title && !isNaN(length)) {
-            // Add a new document to our Firebase collection
-            setsCollection.add({ title, length, tags });
+            // Add the new transcription field to the object
+            setsCollection.add({ title, length, tags, transcription });
             addSetForm.reset();
         }
     });
 
-    // Delete a set from Firebase
+    // UPDATED: Handle clicks for delete AND show/hide transcription
     setListContainer.addEventListener('click', (e) => {
+        // Handle delete button clicks
         if (e.target.classList.contains('delete-btn')) {
             const docId = e.target.getAttribute('data-id');
             if (confirm('Are you sure you want to delete this bit?')) {
                 setsCollection.doc(docId).delete();
             }
         }
+        // Handle "Show/Hide Transcription" button clicks
+        if (e.target.classList.contains('toggle-transcription-btn')) {
+            const targetId = e.target.getAttribute('data-target-id');
+            const transcriptionArea = document.getElementById(targetId);
+            const isHidden = transcriptionArea.classList.toggle('hidden');
+            e.target.textContent = isHidden ? 'Show Transcription' : 'Hide Transcription';
+        }
     });
 
-    // Search functionality (no changes needed here)
+    // Search functionality (no changes needed)
     searchLengthInput.addEventListener('input', filterAndRender);
     searchTagsInput.addEventListener('input', filterAndRender);
     
-    // Export and Import functionality still works for local backups
+    // Import/Export and Gemini functionality remain the same
     exportBtn.addEventListener('click', () => {
         if (comedySets.length === 0) {
             alert('No data to export!');
             return;
         }
-        const dataToExport = comedySets.map(({ id, ...rest }) => rest); // Remove IDs for clean export
+        const dataToExport = comedySets.map(({ id, ...rest }) => rest);
         const dataStr = JSON.stringify(dataToExport, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(dataBlob);
@@ -142,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const importedSets = JSON.parse(event.target.result);
                 if (Array.isArray(importedSets)) {
                     if (confirm('This will ADD the imported bits to your database. Continue?')) {
-                        // Loop and add each imported set to Firebase
                         importedSets.forEach(set => setsCollection.add(set));
                         alert('Data imported successfully!');
                     }
@@ -156,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     });
     
-    // Gemini API integration (no changes needed here)
     getSuggestionBtn.addEventListener('click', async () => {
         const apiKey = geminiApiKeyInput.value.trim();
         const gigDetails = gigDetailsInput.value.trim();
@@ -180,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const prompt = `
             You are a helpful assistant for a stand-up comedian. The comedian needs you to build a cohesive setlist for an upcoming gig.
-            Here is the comedian's library of available bits in JSON format:
+            Here is the comedian's library of available bits in JSON format. IMPORTANT: The "transcription" field is for context only; do not include it in your final output.
             ${JSON.stringify(comedySets.map(({id, ...rest}) => rest), null, 2)}
             Here are the details for the upcoming gig:
             "${gigDetails}"
