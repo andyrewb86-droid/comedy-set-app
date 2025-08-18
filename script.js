@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- START FIREBASE SETUP ---
-    // PASTE YOUR PERSONAL FIREBASE CONFIG OBJECT HERE
+    // This is your personal config in the correct format for our app
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyAl55bFL__bGedFYLXFDHGt47tDi90WRpY",
+      authDomain: "comedy-set-manager.firebaseapp.com",
+      projectId: "comedy-set-manager",
+      storageBucket: "comedy-set-manager.firebasestorage.app",
+      messagingSenderId: "404723429589",
+      appId: "1:404723429589:web:b33169169b1401f47d325c"
     };
 
     // Initialize Firebase
