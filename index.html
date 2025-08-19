@@ -4,12 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comedy Set Manager</title>
-    <link rel="manifest" href="manifest.json">
-    <script>
-        if('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/comedy-app/sw.js');
-        }
-    </script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,7 +14,6 @@
             <button id="login-btn">Login with Google</button>
             <div id="user-details" style="display: none;">
                 <p>Welcome, <span id="user-name"></span>!</p>
-                <a href="history.html">View Performance History</a>
                 <button id="logout-btn">Logout</button>
             </div>
         </div>
@@ -31,27 +24,13 @@
                 <input type="text" id="set-title" placeholder="Title of your bit" required>
                 <input type="number" id="set-length" placeholder="Length (in minutes)" required>
                 <input type="text" id="set-tags" placeholder="Tags (comma, separated)">
-		<textarea id="set-transcription" placeholder="Type or paste the transcription of your bit here..."></textarea>
-		<button type="submit">Add Bit</button>
+                <textarea id="set-transcription" placeholder="Type or paste the transcription of your bit here..."></textarea>
+                <button type="submit">Add Bit</button>
             </form>
         </div>
 
         <div class="card">
-            <h2>Plan an Upcoming Show</h2>
-            <form id="add-show-form">
-                <input type="text" id="show-venue" placeholder="Venue Name" required>
-                <input type="date" id="show-date" required>
-                <button type="submit">Create Show</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <h2>Your Upcoming Shows</h2>
-            <div id="upcoming-shows-container">
-                </div>
-        </div>
-        <div class="card">
-            <h2>Search Your Sets</h2>
+            <h2>Your Bits</h2>
             <div class="search-controls">
                 <input type="number" id="search-length" placeholder="Search by length (mins)">
                 <input type="text" id="search-tags" placeholder="Search by tag">
@@ -59,16 +38,11 @@
             <div id="set-list-container">
                 </div>
         </div>
+    </div>
 
-        <div class="card">
-            <h2>Admin: Import & Export</h2>
-            <p>Save a backup of your data or import it on a new device.</p>
-            <div class="admin-buttons">
-                <button id="export-btn">Export Data</button>
-                <button id="import-btn">Import Data</button>
-                <input type="file" id="import-file" accept=".json" style="display: none;">
-            </div>
-        </div>
-        
-        <div class="card">
-            <h2>Community Forum</h2>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

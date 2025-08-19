@@ -5,21 +5,10 @@ body {
     margin: 0;
     padding: 20px;
 }
-
 .container {
     max-width: 800px;
     margin: 0 auto;
 }
-
-h1, h2 {
-    color: #1c1e21;
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
 .card {
     background-color: #ffffff;
     border-radius: 8px;
@@ -27,68 +16,46 @@ h1 {
     margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
-input[type="text"],
-input[type="number"],
-textarea {
+h1, h2 {
+    color: #1c1e21;
+}
+input, textarea, button {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ddd;
     border-radius: 6px;
-    box-sizing: border-box; /* Important for padding */
+    box-sizing: border-box;
 }
-
-textarea {
-    min-height: 80px;
-    resize: vertical;
-}
-
 button {
     background-color: #1877f2;
     color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    cursor: pointer;
     font-weight: bold;
-    transition: background-color 0.2s;
+    cursor: pointer;
 }
-
 button:hover {
     background-color: #166fe5;
 }
-
-.search-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+#logout-btn {
+    background-color: #606770;
 }
-
 .set-item {
+    padding: 15px;
     background-color: #f7f8fa;
     border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 15px;
     margin-bottom: 10px;
+    border-radius: 6px;
 }
-
 .set-item-main {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
-
-.set-item-details h3 {
-    margin: 0 0 5px 0;
+.delete-btn {
+    background-color: #fa3e3e;
+    padding: 5px 10px;
+    width: auto;
 }
-
-.set-item-details p {
-    margin: 0;
-    font-size: 0.9em;
-    color: #606770;
-}
-
 .tag {
     background-color: #e7f3ff;
     color: #1877f2;
@@ -97,102 +64,23 @@ button:hover {
     font-size: 0.8em;
     margin-right: 5px;
 }
-
-.delete-btn {
-    background-color: #fa3e3e;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-.suggestion-box {
-    background-color: #e7f3ff;
-    border-left: 4px solid #1877f2;
-    padding: 15px;
-    margin-top: 10px;
-    border-radius: 4px;
-    white-space: pre-wrap; /* Preserves line breaks from Gemini */
-}
-
-.admin-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-/* Styles for the new transcription area */
 .transcription-area {
-    background-color: #f0f2f5;
-    border-radius: 4px;
-    padding: 10px;
-    margin-top: 10px;
-    white-space: pre-wrap; /* This keeps your line breaks */
-    font-family: monospace; /* A good font for scripts */
-    max-height: 300px;
-    overflow-y: auto;
-    transition: all 0.3s ease;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #e0e0e0;
 }
-
-/* A class to hide the transcription */
 .transcription-area.hidden {
     display: none;
 }
-
 .toggle-transcription-btn {
     background-color: #606770;
-    padding: 5px 10px;
+    width: auto;
     font-size: 0.8em;
-    margin-top: 10px;
 }
-
-.toggle-transcription-btn:hover {
-    background-color: #4b5158;
-}
-
-/* Styles for Edit/Save buttons */
-.edit-controls {
-    margin-top: 8px;
-    display: flex;
-    gap: 10px;
-}
-
 .edit-btn, .save-btn {
     background-color: #e4e6eb;
     color: #050505;
-    padding: 5px 10px;
+    width: auto;
     font-size: 0.8em;
 }
-
-.edit-btn:hover, .save-btn:hover {
-    background-color: #dcdde1;
-}
-
-.transcription-edit-area {
-    width: 100%;
-    min-height: 150px;
-    margin-top: 5px;
-    font-family: monospace;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-/* Styles for Gig History Page */
-.gig-item {
-    background-color: #f7f8fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 10px;
-}
-.gig-item h3 {
-    margin: 0 0 10px 0;
-}
-.gig-item p {
-    margin: 5px 0;
-    white-space: pre-wrap;
-}
-.gig-item a {
-    font-weight: bold;
-}
+.hidden { display: none; }
