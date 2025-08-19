@@ -15,18 +15,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loginBtn = document.getElementById('login-btn');
 
-    // If a user is already logged in, send them straight to the app
+    // If the user is already logged in, redirect them to the main app
     auth.onAuthStateChanged(user => {
         if (user) {
             window.location.href = 'index.html';
         }
     });
 
-    // When the login button is clicked, start the Google sign-in process
+    // Handle the login button click
     loginBtn.addEventListener('click', () => {
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider).catch(error => {
             console.error("Login failed:", error);
+            alert("Login failed. Please try again. Make sure pop-ups are enabled for this site.");
         });
     });
 });
