@@ -1,8 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const firebaseConfig = { /* PASTE YOUR CONFIG HERE */ };
+    // --- START FIREBASE SETUP ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyAl55bFL__bGedFYLXFDHGt47tDi90WRpY",
+      authDomain: "comedy-set-manager.firebaseapp.com",
+      projectId: "comedy-set-manager",
+      storageBucket: "comedy-set-manager.firebasestorage.app",
+      messagingSenderId: "404723429589",
+      appId: "1:404723429589:web:b33169169b1401f47d325c"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    // --- END FIREBASE SETUP ---
 
     const addSetlistForm = document.getElementById('add-setlist-form');
     const setlistsContainer = document.getElementById('setlists-container');
@@ -20,13 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadData(userId) {
-        // Load all bits to populate dropdowns
         db.collection('users').doc(userId).collection('sets').orderBy('title').onSnapshot(snapshot => {
             allBits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderSetlists(); // Re-render setlists when bits change
+            renderSetlists();
         });
 
-        // Load all setlists
         db.collection('users').doc(userId).collection('setlists').orderBy('title').onSnapshot(snapshot => {
             allSetlists = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderSetlists();
@@ -39,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (title && currentUser) {
             db.collection('users').doc(currentUser.uid).collection('setlists').add({
                 title: title,
-                bits: [] // Start with an empty list of bits
+                bits: []
             });
             addSetlistForm.reset();
         }
@@ -51,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const setlistEl = document.createElement('div');
             setlistEl.classList.add('card', 'shadow-sm', 'mb-3');
             
-            const totalLength = setlist.bits.reduce((sum, bit) => sum + bit.length, 0);
+            const totalLength = setlist.bits.reduce((sum, bit) => sum + (bit.length || 0), 0);
 
             const bitsHTML = setlist.bits.map(bit => `
                 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -71,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="btn btn-sm btn-danger delete-setlist-btn" data-setlist-id="${setlist.id}">Delete Set</button>
                 </div>
                 <div class="card-body">
-                    <ul class="list-group mb-3">${bitsHTML}</ul>
+                    <ul class="list-group mb-3">${bitsHTML || '<li class="list-group-item">No bits added yet.</li>'}</ul>
                     <form class="add-bit-to-setlist-form row g-2" data-setlist-id="${setlist.id}">
                         <div class="col-8">
                             <select class="form-select">
@@ -92,17 +99,16 @@ document.addEventListener('DOMContentLoaded', () => {
     setlistsContainer.addEventListener('click', (e) => {
         if (!currentUser) return;
         const target = e.target;
-        const setlistId = target.dataset.setlistId;
-
-        // Delete entire setlist
+        
         if (target.classList.contains('delete-setlist-btn')) {
+            const setlistId = target.dataset.setlistId;
             if (confirm('Are you sure you want to delete this entire setlist?')) {
                 db.collection('users').doc(currentUser.uid).collection('setlists').doc(setlistId).delete();
             }
         }
         
-        // Remove a single bit from a setlist
         if (target.classList.contains('remove-bit-btn')) {
+            const setlistId = target.dataset.setlistId;
             const bitId = target.dataset.bitId;
             const setlist = allSetlists.find(s => s.id === setlistId);
             const bitToRemove = setlist.bits.find(b => b.id === bitId);
@@ -114,10 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     setlistsContainer.addEventListener('submit', (e) => {
         e.preventDefault();
-        const target = e.target;
-        if (target.classList.contains('add-bit-to-setlist-form')) {
-            const setlistId = target.dataset.setlistId;
-            const select = target.querySelector('select');
+        const form = e.target;
+        if (form.classList.contains('add-bit-to-setlist-form')) {
+            const setlistId = form.dataset.setlistId;
+            const select = form.querySelector('select');
             const bitId = select.value;
             if (bitId) {
                 const bitToAdd = allBits.find(b => b.id === bitId);
