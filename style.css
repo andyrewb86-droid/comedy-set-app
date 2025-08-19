@@ -177,3 +177,22 @@ button:hover {
     border: 1px solid #ccc;
     border-radius: 4px;
 }
+
+/* Styles for Gig History Page */
+.gig-item {
+    background-color: #f7f8fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+.gig-item h3 {
+    margin: 0 0 10px 0;
+}
+.gig-item p {
+    margin: 5px 0;
+    white-space: pre-wrap;
+}
+.gig-item a {
+    font-weight: bold;
+}
