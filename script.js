@@ -14,9 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     // --- END FIREBASE SETUP ---
 
-    const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
-    const userDetails = document.getElementById('user-details');
     const userName = document.getElementById('user-name');
     const addSetForm = document.getElementById('add-set-form');
     const setListContainer = document.getElementById('set-list-container');
@@ -29,28 +27,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     auth.onAuthStateChanged(user => {
         if (user) {
+            // User is logged in, show the app
             currentUser = user;
-            loginBtn.style.display = 'none';
-            userDetails.style.display = 'block';
             userName.textContent = user.displayName;
             loadUserSets(user.uid);
         } else {
-            currentUser = null;
-            loginBtn.style.display = 'block';
-            userDetails.style.display = 'none';
-            userName.textContent = '';
-            if (unsubscribe) unsubscribe();
-            comedySets = [];
-            renderSets([]);
+            // No user is logged in, redirect to the sign-in page
+            window.location.href = 'signin.html';
         }
     });
 
-    loginBtn.addEventListener('click', () => {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider);
+    logoutBtn.addEventListener('click', () => {
+        auth.signOut(); // This will trigger the listener above to redirect
     });
-
-    logoutBtn.addEventListener('click', () => { auth.signOut(); });
 
     function loadUserSets(userId) {
         const setsCollection = db.collection('users').doc(userId).collection('sets');
