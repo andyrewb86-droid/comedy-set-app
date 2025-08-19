@@ -84,16 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const lengthQuery = parseFloat(searchLengthInput.value);
         const tagsQuery = searchTagsInput.value.toLowerCase().trim();
         
-        // DEBUGGING LINE 1
-        console.log("--- New Search ---");
-        
         const filteredSets = comedySets.filter(set => {
             const lengthMatch = isNaN(lengthQuery) || (set.length >= lengthQuery - 2 && set.length <= lengthQuery + 2);
             const tagsMatch = !tagsQuery || set.tags.some(tag => tag.toLowerCase().includes(tagsQuery));
-            
-            // DEBUGGING LINE 2
-            console.log(`Checking "${set.title}" (Length: ${set.length}). Searched for ${lengthQuery}. Match? ${lengthMatch}`);
-            
             return lengthMatch && tagsMatch;
         });
         renderSets(filteredSets);
@@ -128,3 +121,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (target.classList.contains('toggle-transcription-btn')) {
             const content = setItem.querySelector('.transcription-content');
+            content.classList.toggle('hidden');
+        }
+        if (target.classList.contains('edit-btn')) {
+            setItem.querySelector('.transcription-content').classList.add('hidden');
+            setItem.querySelector('.transcription-edit').classList.remove('hidden');
+        }
+        if (target.classList.contains('save-btn')) {
+            const newTranscription = setItem.querySelector('textarea').value;
+            userSetsCollection.doc(docId).update({ transcription: newTranscription });
+        }
+    });
+});
