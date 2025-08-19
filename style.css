@@ -84,3 +84,30 @@ button:hover {
     font-size: 0.8em;
 }
 .hidden { display: none; }
+
+/* Styles for Performance Upload and Modal */
+.transcript-preview {
+    height: 400px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    white-space: pre-wrap;
+    border: 1px solid #dee2e6;
+}
+
+#modal-bits-checklist .form-check {
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 5px;
+}
+
+.gig-stats {
+    font-size: 0.8em;
+    color: #6c757d;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
