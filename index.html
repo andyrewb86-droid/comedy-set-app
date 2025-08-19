@@ -4,42 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comedy Set Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="container">
-        <h1>Comedy Set Manager 🎤</h1>
+<body class="bg-light">
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Comedy Set Manager 🎤</h1>
 
-        <div class="card" id="user-info" style="display: flex; justify-content: space-between; align-items: center;">
-            <p style="margin: 0;">Welcome, <strong id="user-name">Loading...</strong>!</p>
-            <button id="logout-btn" style="width: auto;">Logout</button>
-        </div>
-
-        <div class="card">
-            <h2>Add a New Bit</h2>
-            <form id="add-set-form">
-                <input type="text" id="set-title" placeholder="Title of your bit" required>
-                <input type="number" id="set-length" placeholder="Length (in minutes)" required>
-                <input type="text" id="set-tags" placeholder="Tags (comma, separated)">
-                <textarea id="set-transcription" placeholder="Type or paste the transcription of your bit here..."></textarea>
-                <button type="submit">Add Bit</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <h2>Your Bits</h2>
-            <div class="search-controls">
-                <input type="number" id="search-length" placeholder="Search by length (mins)">
-                <input type="text" id="search-tags" placeholder="Search by tag">
+        <div class="card shadow-sm mb-4" id="user-info">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <p class="mb-0">Welcome, <strong id="user-name">Loading...</strong>!</p>
+                <button id="logout-btn" class="btn btn-secondary">Logout</button>
             </div>
-            <div id="set-list-container">
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="card-title h4">Add a New Bit</h2>
+                <form id="add-set-form">
+                    <div class="mb-3">
+                        <input type="text" id="set-title" class="form-control" placeholder="Title of your bit" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="number" id="set-length" class="form-control" placeholder="Length (in minutes)" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="set-tags" class="form-control" placeholder="Tags (comma, separated)">
+                    </div>
+                    <div class="mb-3">
+                        <textarea id="set-transcription" class="form-control" placeholder="Type or paste the transcription of your bit here..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Add Bit</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title h4">Your Bits</h2>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <input type="number" id="search-length" class="form-control" placeholder="Search by length (e.g., 5 for 3-7 min)">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" id="search-tags" class="form-control" placeholder="Search by tag">
+                    </div>
                 </div>
+                <div id="set-list-container">
+                    </div>
+            </div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script src="script.js"></script>
 </body>
 </html>
