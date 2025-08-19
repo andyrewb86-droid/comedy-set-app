@@ -27,18 +27,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     auth.onAuthStateChanged(user => {
         if (user) {
-            // User is logged in, show the app
             currentUser = user;
             userName.textContent = user.displayName;
             loadUserSets(user.uid);
         } else {
-            // No user is logged in, redirect to the sign-in page
             window.location.href = 'signin.html';
         }
     });
 
     logoutBtn.addEventListener('click', () => {
-        auth.signOut(); // This will trigger the listener above to redirect
+        auth.signOut();
     });
 
     function loadUserSets(userId) {
@@ -56,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setElement.classList.add('set-item');
             setElement.setAttribute('data-id', set.id);
             const transcriptionText = set.transcription || '';
+            const hasTranscription = transcriptionText.trim() !== '';
+
             setElement.innerHTML = `
                 <div class="set-item-main">
                     <div>
@@ -63,18 +63,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p>Length: ${set.length} min</p>
                         <p>Tags: ${set.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}</p>
                     </div>
-                    <button class="delete-btn">Delete</button>
+                    <button class="btn btn-sm btn-danger delete-btn">Delete</button>
                 </div>
-                ${transcriptionText ? `
-                    <div class="transcription-area">
-                        <button class="toggle-transcription-btn">Show Transcription</button>
-                        <div class="transcription-content hidden">
-                            <p>${transcriptionText}</p>
-                            <button class="edit-btn">Edit</button>
+                ${hasTranscription ? `
+                    <div class="transcription-area mt-3 pt-3 border-top">
+                        <button class="btn btn-sm btn-secondary toggle-transcription-btn">Show Transcription</button>
+                        <div class="transcription-content hidden mt-2">
+                            <p style="white-space: pre-wrap;">${transcriptionText}</p>
+                            <button class="btn btn-sm btn-outline-secondary edit-btn mt-2">Edit</button>
                         </div>
-                        <div class="transcription-edit hidden">
-                            <textarea>${transcriptionText}</textarea>
-                            <button class="save-btn">Save</button>
+                        <div class="transcription-edit hidden mt-2">
+                            <textarea class="form-control">${transcriptionText}</textarea>
+                            <button class="btn btn-sm btn-success save-btn mt-2">Save</button>
                         </div>
                     </div>` : ''}
             `;
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: document.getElementById('set-title').value,
             length: parseFloat(document.getElementById('set-length').value),
             tags: document.getElementById('set-tags').value.split(',').map(t => t.trim()).filter(Boolean),
-            transcription: document.getElementById('set-transcription').value
+            transcription: document.getElementById('set-transcription').value // ADDED THIS LINE BACK
         };
         db.collection('users').doc(currentUser.uid).collection('sets').add(newSet);
         addSetForm.reset();
@@ -123,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target.classList.contains('toggle-transcription-btn')) {
             const content = setItem.querySelector('.transcription-content');
             content.classList.toggle('hidden');
+            target.textContent = content.classList.contains('hidden') ? 'Show Transcription' : 'Hide Transcription';
         }
         if (target.classList.contains('edit-btn')) {
             setItem.querySelector('.transcription-content').classList.add('hidden');
