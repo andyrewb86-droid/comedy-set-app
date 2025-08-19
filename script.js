@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     // --- END FIREBASE SETUP ---
 
+    // Find all elements, but they might not all exist on every page
     const logoutBtn = document.getElementById('logout-btn');
     const userName = document.getElementById('user-name');
     const addSetForm = document.getElementById('add-set-form');
@@ -28,16 +29,25 @@ document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(user => {
         if (user) {
             currentUser = user;
-            userName.textContent = user.displayName;
+            // Only try to update username if the element exists
+            if (userName) {
+                userName.textContent = user.displayName;
+            }
             loadUserSets(user.uid);
         } else {
-            window.location.href = 'signin.html';
+            // If we are not on the signin page, redirect there.
+            if (window.location.pathname.indexOf('signin.html') === -1) {
+                window.location.href = 'signin.html';
+            }
         }
     });
 
-    logoutBtn.addEventListener('click', () => {
-        auth.signOut();
-    });
+    // Only add a listener if the logout button exists
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut();
+        });
+    }
 
     function loadUserSets(userId) {
         const setsCollection = db.collection('users').doc(userId).collection('sets');
@@ -48,14 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const renderSets = (setsToRender) => {
+        // Only try to render if the container exists
+        if (!setListContainer) return;
         setListContainer.innerHTML = '';
         setsToRender.forEach(set => {
             const setElement = document.createElement('div');
             setElement.classList.add('set-item');
             setElement.setAttribute('data-id', set.id);
             const transcriptionText = set.transcription || '';
-            const hasTranscription = transcriptionText.trim() !== '';
-
             setElement.innerHTML = `
                 <div class="set-item-main">
                     <div>
@@ -63,18 +73,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p>Length: ${set.length} min</p>
                         <p>Tags: ${set.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}</p>
                     </div>
-                    <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+                    <button class="delete-btn">Delete</button>
                 </div>
-                ${hasTranscription ? `
-                    <div class="transcription-area mt-3 pt-3 border-top">
-                        <button class="btn btn-sm btn-secondary toggle-transcription-btn">Show Transcription</button>
-                        <div class="transcription-content hidden mt-2">
-                            <p style="white-space: pre-wrap;">${transcriptionText}</p>
-                            <button class="btn btn-sm btn-outline-secondary edit-btn mt-2">Edit</button>
+                ${transcriptionText ? `
+                    <div class="transcription-area">
+                        <button class="toggle-transcription-btn">Show Transcription</button>
+                        <div class="transcription-content hidden">
+                            <p>${transcriptionText}</p>
+                            <button class="edit-btn">Edit</button>
                         </div>
-                        <div class="transcription-edit hidden mt-2">
-                            <textarea class="form-control">${transcriptionText}</textarea>
-                            <button class="btn btn-sm btn-success save-btn mt-2">Save</button>
+                        <div class="transcription-edit hidden">
+                            <textarea>${transcriptionText}</textarea>
+                            <button class="save-btn">Save</button>
                         </div>
                     </div>` : ''}
             `;
@@ -83,6 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const filterAndRender = () => {
+        // Only run filter logic if the search inputs exist
+        if (!searchLengthInput || !searchTagsInput) return;
+        
         const lengthQuery = parseFloat(searchLengthInput.value);
         const tagsQuery = searchTagsInput.value.toLowerCase().trim();
         const filteredSets = comedySets.filter(set => {
@@ -93,45 +106,53 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSets(filteredSets);
     };
     
-    searchLengthInput.addEventListener('input', filterAndRender);
-    searchTagsInput.addEventListener('input', filterAndRender);
+    // Only add listeners if the elements exist
+    if (searchLengthInput) {
+        searchLengthInput.addEventListener('input', filterAndRender);
+    }
+    if (searchTagsInput) {
+        searchTagsInput.addEventListener('input', filterAndRender);
+    }
 
-    addSetForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (!currentUser) return;
-        const newSet = {
-            title: document.getElementById('set-title').value,
-            length: parseFloat(document.getElementById('set-length').value),
-            tags: document.getElementById('set-tags').value.split(',').map(t => t.trim()).filter(Boolean),
-            transcription: document.getElementById('set-transcription').value // ADDED THIS LINE BACK
-        };
-        db.collection('users').doc(currentUser.uid).collection('sets').add(newSet);
-        addSetForm.reset();
-    });
+    if (addSetForm) {
+        addSetForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+            const newSet = {
+                title: document.getElementById('set-title').value,
+                length: parseFloat(document.getElementById('set-length').value),
+                tags: document.getElementById('set-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+                transcription: document.getElementById('set-transcription').value
+            };
+            db.collection('users').doc(currentUser.uid).collection('sets').add(newSet);
+            addSetForm.reset();
+        });
+    }
 
-    setListContainer.addEventListener('click', (e) => {
-        if (!currentUser) return;
-        const target = e.target;
-        const setItem = target.closest('.set-item');
-        if (!setItem) return;
-        const docId = setItem.getAttribute('data-id');
-        const userSetsCollection = db.collection('users').doc(currentUser.uid).collection('sets');
+    if (setListContainer) {
+        setListContainer.addEventListener('click', (e) => {
+            if (!currentUser) return;
+            const target = e.target;
+            const setItem = target.closest('.set-item');
+            if (!setItem) return;
+            const docId = setItem.getAttribute('data-id');
+            const userSetsCollection = db.collection('users').doc(currentUser.uid).collection('sets');
 
-        if (target.classList.contains('delete-btn')) {
-            if (confirm('Are you sure?')) userSetsCollection.doc(docId).delete();
-        }
-        if (target.classList.contains('toggle-transcription-btn')) {
-            const content = setItem.querySelector('.transcription-content');
-            content.classList.toggle('hidden');
-            target.textContent = content.classList.contains('hidden') ? 'Show Transcription' : 'Hide Transcription';
-        }
-        if (target.classList.contains('edit-btn')) {
-            setItem.querySelector('.transcription-content').classList.add('hidden');
-            setItem.querySelector('.transcription-edit').classList.remove('hidden');
-        }
-        if (target.classList.contains('save-btn')) {
-            const newTranscription = setItem.querySelector('textarea').value;
-            userSetsCollection.doc(docId).update({ transcription: newTranscription });
-        }
-    });
+            if (target.classList.contains('delete-btn')) {
+                if (confirm('Are you sure?')) userSetsCollection.doc(docId).delete();
+            }
+            if (target.classList.contains('toggle-transcription-btn')) {
+                const content = setItem.querySelector('.transcription-content');
+                content.classList.toggle('hidden');
+            }
+            if (target.classList.contains('edit-btn')) {
+                setItem.querySelector('.transcription-content').classList.add('hidden');
+                setItem.querySelector('.transcription-edit').classList.remove('hidden');
+            }
+            if (target.classList.contains('save-btn')) {
+                const newTranscription = setItem.querySelector('textarea').value;
+                userSetsCollection.doc(docId).update({ transcription: newTranscription });
+            }
+        });
+    }
 });
