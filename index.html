@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comedy Set Manager</title>
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/comedy-app/sw.js');
+        }
+    </script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,13 +17,13 @@
         <h1>Comedy Set Manager 🎤</h1>
 
         <div class="card" id="auth-container">
-    <button id="login-btn">Login with Google</button>
-    <div id="user-details" style="display: none;">
-        <p>Welcome, <span id="user-name"></span>!</p>
-        <a href="history.html">View Performance History</a>
-        <button id="logout-btn">Logout</button>
-    </div>
-</div>
+            <button id="login-btn">Login with Google</button>
+            <div id="user-details" style="display: none;">
+                <p>Welcome, <span id="user-name"></span>!</p>
+                <a href="history.html">View Performance History</a>
+                <button id="logout-btn">Logout</button>
+            </div>
+        </div>
 
         <div class="card">
             <h2>Add a New Bit</h2>
@@ -31,16 +37,19 @@
         </div>
 
         <div class="card">
-            <h2>✨ Setlist Genius (with Gemini)</h2>
-            <p>Describe the gig (audience, venue, vibe) and the desired set length.</p>
-            <textarea id="gig-details" placeholder="e.g., 'Tuesday open mic, rowdy crowd, mostly college kids. Need 7 minutes.'"></textarea>
-            <input type="text" id="gemini-api-key" placeholder="Enter Your Gemini API Key Here">
-            <button id="get-suggestion-btn">Get Setlist Suggestion</button>
-            <div id="gemini-suggestion" class="suggestion-box">
-                Your setlist suggestion will appear here...
-            </div>
+            <h2>Plan an Upcoming Show</h2>
+            <form id="add-show-form">
+                <input type="text" id="show-venue" placeholder="Venue Name" required>
+                <input type="date" id="show-date" required>
+                <button type="submit">Create Show</button>
+            </form>
         </div>
 
+        <div class="card">
+            <h2>Your Upcoming Shows</h2>
+            <div id="upcoming-shows-container">
+                </div>
+        </div>
         <div class="card">
             <h2>Search Your Sets</h2>
             <div class="search-controls">
@@ -60,11 +69,6 @@
                 <input type="file" id="import-file" accept=".json" style="display: none;">
             </div>
         </div>
-    </div>
-	<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
-
-	<script src="script.js"></script>
-</body>
-</html>
+        
+        <div class="card">
+            <h2>Community Forum</h2>
