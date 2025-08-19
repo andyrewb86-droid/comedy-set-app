@@ -86,7 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const lengthQuery = parseFloat(searchLengthInput.value);
         const tagsQuery = searchTagsInput.value.toLowerCase().trim();
         const filteredSets = comedySets.filter(set => {
-            const lengthMatch = isNaN(lengthQuery) || set.length === lengthQuery;
+        // After
+        const lengthMatch = isNaN(lengthQuery) || (set.length >= lengthQuery - 2 && set.length <= lengthQuery + 2);
             const tagsMatch = !tagsQuery || set.tags.some(tag => tag.toLowerCase().includes(tagsQuery));
             return lengthMatch && tagsMatch;
         });
