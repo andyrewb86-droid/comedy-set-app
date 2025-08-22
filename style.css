@@ -10,11 +10,20 @@ body {
     margin: 0 auto;
 }
 .card {
+
+    /* UPDATED Navigation Bar Styles */
+nav {
     background-color: #ffffff;
-    border-radius: 8px;
-    padding: 20px;
+    padding: 10px 0;
     margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #dee2e6;
+}
+
+nav .container {
+    display: flex;
+    gap: 20px;
+    align-items: center;
 }
 h1, h2 {
     color: #1c1e21;
@@ -124,4 +133,5 @@ button:hover {
     display: block; /* Change from flex to block */
     margin-top: 5px;
 }
+
 
