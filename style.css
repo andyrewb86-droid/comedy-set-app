@@ -121,8 +121,7 @@ button:hover {
 }
 
 .tags-edit-view {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: block; /* Change from flex to block */
     margin-top: 5px;
 }
+
