@@ -26,10 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUser = user;
             loadUserSets(user.uid);
         } else {
-            // If we are not on the signin page, redirect there.
-            if (window.location.pathname.indexOf('signin.html') === -1) {
-                window.location.href = 'signin.html';
-            }
+            window.location.href = 'signin.html';
         }
     });
 
@@ -42,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const renderSets = (setsToRender) => {
-        if (!setListContainer) return; // Prevent errors if element doesn't exist
+        if (!setListContainer) return;
         
         setListContainer.innerHTML = '';
         if (!setsToRender || setsToRender.length === 0) {
@@ -52,28 +49,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setsToRender.forEach((set) => {
             const setElement = document.createElement('div');
-            setElement.classList.add('set-item');
+            setElement.classList.add('set-item', 'card', 'card-body', 'mb-3'); // Using card styles for consistency
             setElement.setAttribute('data-id', set.id);
             const transcriptionText = set.transcription || '';
             const hasTranscription = transcriptionText.trim() !== '';
+            const tagsText = set.tags ? set.tags.join(', ') : '';
 
             setElement.innerHTML = `
                 <div class="set-item-main">
                     <div>
                         <h3>${set.title}</h3>
-                        <p>Length: ${set.length} min</p>
-                        <p>Tags: ${set.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}</p>
+                        <p class="mb-2"><strong>Length:</strong> ${set.length} min</p>
+                        
+                        <div class="tags-container">
+                            <div class="tags-display-view">
+                                <p class="mb-0"><strong>Tags:</strong> ${set.tags ? set.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags'}</p>
+                                <button class="btn btn-sm btn-outline-secondary edit-tags-btn">Edit</button>
+                            </div>
+                            <div class="tags-edit-view d-none">
+                                <input type="text" class="form-control form-control-sm" value="${tagsText}">
+                                <button class="btn btn-sm btn-success save-tags-btn">Save</button>
+                            </div>
+                        </div>
                     </div>
                     <button class="btn btn-sm btn-danger delete-btn">Delete</button>
                 </div>
                 ${hasTranscription ? `
                     <div class="transcription-area mt-3 pt-3 border-top">
                         <button class="btn btn-sm btn-secondary toggle-transcription-btn">Show Transcription</button>
-                        <div class="transcription-content hidden mt-2">
+                        <div class="transcription-content d-none mt-2">
                             <p style="white-space: pre-wrap;">${transcriptionText}</p>
                             <button class="btn btn-sm btn-outline-secondary edit-btn mt-2">Edit</button>
                         </div>
-                        <div class="transcription-edit hidden mt-2">
+                        <div class="transcription-edit d-none mt-2">
                             <textarea class="form-control">${transcriptionText}</textarea>
                             <button class="btn btn-sm btn-success save-btn mt-2">Save</button>
                         </div>
@@ -84,14 +92,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const filterAndRender = () => {
-        if (!searchLengthInput || !searchTagsInput) return; // Prevent errors if elements don't exist
+        if (!searchLengthInput || !searchTagsInput) return;
 
         const lengthQuery = parseFloat(searchLengthInput.value);
         const tagsQuery = searchTagsInput.value.toLowerCase().trim();
 
         const filteredSets = comedySets.filter(set => {
             const lengthMatch = isNaN(lengthQuery) || (set.length >= lengthQuery - 2 && set.length <= lengthQuery + 2);
-            const tagsMatch = !tagsQuery || set.tags.some(tag => tag.toLowerCase().includes(tagsQuery));
+            const tagsMatch = !tagsQuery || (set.tags && set.tags.some(tag => tag.toLowerCase().includes(tagsQuery)));
             return lengthMatch && tagsMatch;
         });
         renderSets(filteredSets);
@@ -113,6 +121,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const docId = setItem.getAttribute('data-id');
             const userSetsCollection = db.collection('users').doc(currentUser.uid).collection('sets');
 
+            // --- NEW LOGIC FOR EDITING TAGS ---
+            if (target.classList.contains('edit-tags-btn')) {
+                setItem.querySelector('.tags-display-view').classList.add('d-none');
+                setItem.querySelector('.tags-edit-view').classList.remove('d-none');
+            }
+
+            if (target.classList.contains('save-tags-btn')) {
+                const newTagsValue = setItem.querySelector('.tags-edit-view input').value;
+                const newTagsArray = newTagsValue.split(',').map(tag => tag.trim()).filter(Boolean);
+                
+                userSetsCollection.doc(docId).update({ tags: newTagsArray })
+                    .then(() => {
+                        setItem.querySelector('.tags-display-view').classList.remove('d-none');
+                        setItem.querySelector('.tags-edit-view').classList.add('d-none');
+                    });
+            }
+            // --- END OF NEW LOGIC ---
+
             if (target.classList.contains('delete-btn')) {
                 if (confirm('Are you sure you want to delete this bit?')) {
                     userSetsCollection.doc(docId).delete();
@@ -120,15 +146,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (target.classList.contains('toggle-transcription-btn')) {
                 const content = setItem.querySelector('.transcription-content');
-                content.classList.toggle('hidden');
-                target.textContent = content.classList.contains('hidden') ? 'Show Transcription' : 'Hide Transcription';
+                content.classList.toggle('d-none'); // Use d-none for Bootstrap
+                target.textContent = content.classList.contains('d-none') ? 'Show Transcription' : 'Hide Transcription';
             }
             if (target.classList.contains('edit-btn')) {
-                setItem.querySelector('.transcription-content').classList.add('hidden');
-                setItem.querySelector('.transcription-edit').classList.remove('hidden');
+                setItem.querySelector('.transcription-content').classList.add('d-none');
+                setItem.querySelector('.transcription-edit').classList.remove('d-none');
             }
             if (target.classList.contains('save-btn')) {
-                const newTranscription = setItem.querySelector('textarea').value;
+                const newTranscription = setItem.querySelector('.transcription-edit textarea').value;
                 userSetsCollection.doc(docId).update({ transcription: newTranscription });
             }
         });
