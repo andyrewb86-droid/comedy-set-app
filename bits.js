@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tags = set.tags && set.tags.length > 0 ? set.tags : [];
             const tagsText = tags.join(', ');
 
-            // --- NEW TAG TRUNCATION LOGIC ---
+            // --- TAG TRUNCATION LOGIC ---
             let tagsHTML = '';
             const maxTagsToShow = 5;
             if (tags.length > maxTagsToShow) {
@@ -71,7 +71,15 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 tagsHTML = tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags';
             }
-            // --- END NEW TAG LOGIC ---
+
+            // --- NEW: TRANSCRIPT PREVIEW LOGIC ---
+            let transcriptPreviewHTML = '';
+            if (hasTranscription) {
+                const lines = transcriptionText.split('\n');
+                const previewText = lines.slice(0, 3).join('\n');
+                // Use a different class for the preview paragraph
+                transcriptPreviewHTML = `<p class="transcript-preview-text">${previewText}${lines.length > 3 ? '...' : ''}</p>`;
+            }
 
             setElement.innerHTML = `
                 <div class="set-item-main">
@@ -91,9 +99,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <button class="delete-btn secondary outline">Delete</button>
                 </div>
+                
+                ${transcriptPreviewHTML}
+
                 ${hasTranscription ? `
                     <div class="transcription-area">
-                        <button class="toggle-transcription-btn secondary outline">Show Transcription</button>
+                        <button class="toggle-transcription-btn secondary outline">Show Full Transcript & Edit</button>
                         <div class="transcription-content d-none">
                             <p>${transcriptionText}</p>
                             <button class="edit-btn secondary outline">Edit</button>
@@ -124,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchTagsInput.addEventListener('input', filterAndRender);
     
     setListContainer.addEventListener('click', (e) => {
+        // This function is unchanged
         if (!currentUser) return;
         const target = e.target;
         const setItem = target.closest('.set-item');
@@ -131,15 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const docId = setItem.getAttribute('data-id');
         const userSetsCollection = db.collection('users').doc(currentUser.uid).collection('sets');
 
-        // --- NEW CLICK HANDLER FOR TOGGLING TAGS ---
         if (target.classList.contains('toggle-tags-btn')) {
             const truncatedView = setItem.querySelector('.tags-truncated');
             const fullView = setItem.querySelector('.tags-full');
             truncatedView.classList.toggle('d-none');
             fullView.classList.toggle('d-none');
         }
-        // --- END NEW CLICK HANDLER ---
-
         if (target.classList.contains('edit-tags-btn')) {
             setItem.querySelector('.tags-display-view').classList.add('d-none');
             setItem.querySelector('.tags-edit-view').classList.remove('d-none');
