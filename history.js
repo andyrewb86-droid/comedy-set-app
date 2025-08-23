@@ -1,18 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- START FIREBASE SETUP ---
-    const firebaseConfig = { /* PASTE YOUR CONFIG HERE */ };
+    const firebaseConfig = {
+      apiKey: "AIzaSyAl55bFL__bGedFYLXFDHGt47tDi90WRpY",
+      authDomain: "comedy-set-manager.firebaseapp.com",
+      projectId: "comedy-set-manager",
+      storageBucket: "comedy-set-manager.firebasestorage.app",
+      messagingSenderId: "404723429589",
+      appId: "1:404723429589:web:b33169169b1401f47d325c"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-    // --- END FIREBASE SETUP ---
 
     const uploadInput = document.getElementById('upload-performance-file');
     const gigHistoryContainer = document.getElementById('gig-history-container');
-    const linkBitsModal = new bootstrap.Modal(document.getElementById('linkBitsModal'));
     const modalTranscript = document.getElementById('modal-transcript');
     const modalBitsChecklist = document.getElementById('modal-bits-checklist');
     const savePerformanceBtn = document.getElementById('save-performance-btn');
-
+    const linkBitsModal = document.getElementById('linkBitsModal');
+    
     let currentUser = null;
     let allUserBits = [];
     let parsedPerformanceData = {};
@@ -27,102 +32,86 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadInitialData(userId) {
-        // Load user's bits to use in the linking modal
         db.collection('users').doc(userId).collection('sets').orderBy('title').onSnapshot(snapshot => {
             allUserBits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         });
-
-        // Load past gigs to display on the page
-        db.collection('users').doc(userId).collection('gigs').orderBy('recordedDate', 'desc').onSnapshot(snapshot => {
+        db.collection('users').doc(userId).collection('gigs').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
             renderGigHistory(snapshot.docs);
         });
     }
     
-    uploadInput.addEventListener('change', (e) => {
+    uploadInput.addEventListener('change', e => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
-        reader.onload = (event) => {
-            const content = event.target.result;
-            parsePerformanceFile(content);
-        };
+        reader.onload = event => parsePerformanceFile(event.target.result);
         reader.readAsText(file);
     });
 
-    function parsePerformanceFile(text) {
-        parsedPerformanceData = {}; // Reset previous data
-        const lines = text.split('\n');
-        
-        // Extract basic details and stats
-        parsedPerformanceData.recordedDate = lines.find(l => l.startsWith('Recorded:')).split(': ')[1].trim();
-        parsedPerformanceData.stats = {
-            lpm: lines.find(l => l.startsWith('Laughs per Minute:')).split(': ')[1].trim(),
-            lspm: lines.find(l => l.startsWith('Laugh Seconds per Minute:')).split(': ')[1].trim(),
-            totalDuration: lines.find(l => l.startsWith('Total Duration:')).split(': ')[1].trim(),
-        };
-        parsedPerformanceData.fullTranscript = text;
+    function parsePerformanceFile(content) {
+        try {
+            parsedPerformanceData = {};
+            const lines = content.split('\n');
+            parsedPerformanceData.recordedDate = new Date(lines.find(l => l.startsWith('Recorded:')).split(': ')[1].trim());
+            parsedPerformanceData.venue = lines[0].trim();
+            parsedPerformanceData.stats = {
+                lpm: lines.find(l => l.startsWith('Laughs per Minute:')).split(': ')[1].trim(),
+                lspm: lines.find(l => l.startsWith('Laugh Seconds per Minute:')).split(': ')[1].trim(),
+                totalDuration: lines.find(l => l.startsWith('Total Duration:')).split(': ')[1].trim(),
+            };
+            parsedPerformanceData.fullTranscript = content;
 
-        // Populate and show the modal
-        modalTranscript.textContent = text;
-        modalBitsChecklist.innerHTML = allUserBits.map(bit => `
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="${bit.id}" id="bit-${bit.id}">
-                <label class="form-check-label" for="bit-${bit.id}">
+            modalTranscript.textContent = content;
+            modalBitsChecklist.innerHTML = allUserBits.map(bit => `
+                <label>
+                    <input type="checkbox" value="${bit.id}"/>
                     ${bit.title} (${bit.length} min)
                 </label>
-            </div>
-        `).join('');
-        linkBitsModal.show();
+            `).join('');
+            linkBitsModal.setAttribute('open', true);
+        } catch (error) {
+            alert("Could not read the file. Please ensure it's in the correct format.");
+            console.error("File parsing error:", error);
+        }
     }
 
     savePerformanceBtn.addEventListener('click', () => {
         if (!currentUser || !parsedPerformanceData) return;
-
         const selectedBitIds = Array.from(modalBitsChecklist.querySelectorAll('input:checked')).map(input => input.value);
         const selectedBits = allUserBits.filter(bit => selectedBitIds.includes(bit.id));
-        
-        const performanceToSave = {
-            ...parsedPerformanceData,
-            linkedBits: selectedBits, // Store the full bit objects for easy display
-            createdAt: new Date()
-        };
+        const performanceToSave = { ...parsedPerformanceData, linkedBits: selectedBits, createdAt: new Date() };
 
         db.collection('users').doc(currentUser.uid).collection('gigs').add(performanceToSave)
             .then(() => {
-                linkBitsModal.hide();
-                uploadInput.value = ''; // Clear the file input
+                linkBitsModal.removeAttribute('open');
+                uploadInput.value = '';
                 alert('Performance saved successfully!');
             });
     });
 
     function renderGigHistory(gigDocs) {
         if (gigDocs.length === 0) {
-            gigHistoryContainer.innerHTML = '<p>No gigs logged yet. Upload a performance report to get started.</p>';
+            gigHistoryContainer.innerHTML = '<article><p>No gigs logged yet. Upload a performance report to get started.</p></article>';
             return;
         }
-
         gigHistoryContainer.innerHTML = gigDocs.map(doc => {
             const gig = doc.data();
-            const gigDate = new Date(gig.recordedDate).toLocaleDateString();
-            const setlist = gig.linkedBits.map(bit => `<li>${bit.title} (${bit.length} min)</li>`).join('');
-
-            return `
-                <div class="card shadow-sm mb-3">
-                    <div class="card-header">
-                        <h3 class="h5 mb-0">Performance on ${gigDate}</h3>
+            const gigDate = gig.recordedDate ? gig.recordedDate.toDate().toLocaleDateString() : new Date(gig.date).toLocaleDateString();
+            let detailsHTML = '';
+            if (gig.stats) {
+                const setlist = gig.linkedBits.map(bit => `<li>${bit.title} (${bit.length} min)</li>`).join('');
+                detailsHTML = `
+                    <div class="grid">
+                        <span><strong>Laughs/Min:</strong> ${gig.stats.lpm}</span>
+                        <span><strong>Laugh Secs/Min:</strong> ${gig.stats.lspm}</span>
+                        <span><strong>Duration:</strong> ${gig.stats.totalDuration}</span>
                     </div>
-                    <div class="card-body">
-                        <div class="gig-stats mb-3">
-                            <span><strong>Laughs/Min:</strong> ${gig.stats.lpm}</span>
-                            <span><strong>Laugh Secs/Min:</strong> ${gig.stats.lspm}</span>
-                            <span><strong>Duration:</strong> ${gig.stats.totalDuration}</span>
-                        </div>
-                        <h5>Setlist Performed:</h5>
-                        <ul>${setlist || '<li>No bits were linked.</li>'}</ul>
-                    </div>
-                </div>
-            `;
+                    <h6>Setlist Performed:</h6>
+                    <ul>${setlist || '<li>No bits were linked.</li>'}</ul>`;
+            } else { // Fallback for older, manual data
+                detailsHTML = `<p><strong>Rating:</strong> ${'★'.repeat(gig.rating)}${'☆'.repeat(5 - gig.rating)}</p>`;
+            }
+            return `<article><h6>${gig.venue} on ${gigDate}</h6>${detailsHTML}</article>`;
         }).join('');
     }
 });
