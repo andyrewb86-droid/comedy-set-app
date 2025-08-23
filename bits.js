@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- START FIREBASE SETUP ---
     const firebaseConfig = {
       apiKey: "AIzaSyAl55bFL__bGedFYLXFDHGt47tDi90WRpY",
       authDomain: "comedy-set-manager.firebaseapp.com",
@@ -7,9 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
       messagingSenderId: "404723429589",
       appId: "1:404723429589:web:b33169169b1401f47d325c"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    // --- END FIREBASE SETUP ---
 
     const setListContainer = document.getElementById('set-list-container');
     const searchLengthInput = document.getElementById('search-length');
@@ -28,24 +31,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadUserSets(userId) {
-        db.collection('users').doc(userId).collection('sets').orderBy('title').onSnapshot(snapshot => {
+        const setsCollection = db.collection('users').doc(userId).collection('sets');
+        setsCollection.orderBy('title').onSnapshot(snapshot => {
             comedySets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             filterAndRender();
         });
     }
 
     const renderSets = (setsToRender) => {
+        if (!setListContainer) return;
+        
         setListContainer.innerHTML = '';
-        if (setsToRender.length === 0) {
-            setListContainer.innerHTML = '<p>No bits found.</p>';
+        if (!setsToRender || setsToRender.length === 0) {
+            setListContainer.innerHTML = '<p>No bits found. Try adding some on the Dashboard!</p>';
             return;
         }
-        setsToRender.forEach(set => {
+
+        setsToRender.forEach((set) => {
             const setElement = document.createElement('article');
             setElement.className = 'set-item';
             setElement.setAttribute('data-id', set.id);
+            
             const transcriptionText = set.transcription || '';
-            const tags = set.tags || [];
+            const hasTranscription = transcriptionText.trim() !== '';
+            const tags = set.tags && set.tags.length > 0 ? set.tags : [];
+            const tagsText = tags.join(', ');
+
+            // --- NEW TAG TRUNCATION LOGIC ---
+            let tagsHTML = '';
+            const maxTagsToShow = 5;
+            if (tags.length > maxTagsToShow) {
+                const truncatedTags = tags.slice(0, maxTagsToShow).map(tag => `<span class="tag">${tag}</span>`).join(' ');
+                const fullTags = tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
+                const remainingCount = tags.length - maxTagsToShow;
+                tagsHTML = `
+                    <span class="tags-truncated">${truncatedTags}<button class="toggle-tags-btn">+ ${remainingCount} more</button></span>
+                    <span class="tags-full d-none">${fullTags}<button class="toggle-tags-btn">Show Less</button></span>
+                `;
+            } else {
+                tagsHTML = tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags';
+            }
+            // --- END NEW TAG LOGIC ---
+
             setElement.innerHTML = `
                 <div class="set-item-main">
                     <div>
@@ -53,18 +80,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>Length:</strong> ${set.length} min</p>
                         <div class="tags-container">
                             <div class="tags-display-view">
-                                <p><strong>Tags:</strong> ${tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'None'}</p>
+                                <p><strong>Tags:</strong> ${tagsHTML}</p>
                                 <button class="edit-tags-btn secondary outline">Edit</button>
                             </div>
                             <div class="tags-edit-view d-none">
-                                <input type="text" value="${tags.join(', ')}">
+                                <input type="text" value="${tagsText}">
                                 <button class="save-tags-btn">Save</button>
                             </div>
                         </div>
                     </div>
                     <button class="delete-btn secondary outline">Delete</button>
                 </div>
-                ${transcriptionText ? `
+                ${hasTranscription ? `
                     <div class="transcription-area">
                         <button class="toggle-transcription-btn secondary outline">Show Transcription</button>
                         <div class="transcription-content d-none">
@@ -82,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const filterAndRender = () => {
+        // This function is unchanged
         const lengthQuery = parseFloat(searchLengthInput.value);
         const tagsQuery = searchTagsInput.value.toLowerCase().trim();
         const filteredSets = comedySets.filter(set => {
@@ -102,6 +130,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!setItem) return;
         const docId = setItem.getAttribute('data-id');
         const userSetsCollection = db.collection('users').doc(currentUser.uid).collection('sets');
+
+        // --- NEW CLICK HANDLER FOR TOGGLING TAGS ---
+        if (target.classList.contains('toggle-tags-btn')) {
+            const truncatedView = setItem.querySelector('.tags-truncated');
+            const fullView = setItem.querySelector('.tags-full');
+            truncatedView.classList.toggle('d-none');
+            fullView.classList.toggle('d-none');
+        }
+        // --- END NEW CLICK HANDLER ---
 
         if (target.classList.contains('edit-tags-btn')) {
             setItem.querySelector('.tags-display-view').classList.add('d-none');

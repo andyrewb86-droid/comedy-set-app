@@ -60,3 +60,14 @@ nav a {
 .text-center {
     text-align: center;
 }
+
+.toggle-tags-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--primary);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-left: 5px;
+}
