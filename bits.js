@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         setListContainer.innerHTML = '';
         if (!setsToRender || setsToRender.length === 0) {
-            setListContainer.innerHTML = '<p>No bits found. Try adding some on the Dashboard!</p>';
+            setListContainer.innerHTML = '<article><p>No bits found. Try adding some on the Dashboard!</p></article>';
             return;
         }
 
@@ -72,24 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 tagsHTML = tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags';
             }
 
-            // --- UPDATED TRANSCRIPTION HTML ---
-            let transcriptionHTML = '';
-            if (hasTranscription) {
-                transcriptionHTML = `
-                    <div class="transcript-preview-container mt-2">
-                         <p class="transcript-preview-text">${transcriptionText}</p>
-                    </div>
-                    <div class="grid" style="--grid-cols: auto auto;">
-                        <button class="toggle-transcript-btn secondary outline">Show More</button>
-                        <button class="edit-btn secondary outline">Edit</button>
-                    </div>
-                    <div class="transcription-edit d-none mt-2">
-                        <textarea>${transcriptionText}</textarea>
-                        <button class="save-btn">Save</button>
-                    </div>
-                `;
-            }
-
             setElement.innerHTML = `
                 <div class="set-item-main">
                     <div>
@@ -108,17 +90,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <button class="delete-btn secondary outline">Delete</button>
                 </div>
-                ${transcriptionHTML}
+                ${hasTranscription ? `
+                    <div class="transcription-area">
+                        <button class="toggle-transcription-btn secondary outline">Show Transcription</button>
+                        <div class="transcription-content d-none">
+                            <p>${transcriptionText}</p>
+                            <button class="edit-btn secondary outline">Edit</button>
+                        </div>
+                        <div class="transcription-edit d-none">
+                            <textarea>${transcriptionText}</textarea>
+                            <button class="save-btn">Save</button>
+                        </div>
+                    </div>` : ''}
             `;
             setListContainer.appendChild(setElement);
         });
     };
 
     const filterAndRender = () => {
-        // Unchanged
+        if (!searchLengthInput || !searchTagsInput) return;
+        const lengthQuery = parseFloat(searchLengthInput.value);
+        const tagsQuery = searchTagsInput.value.toLowerCase().trim();
+        const filteredSets = comedySets.filter(set => {
+            const lengthMatch = isNaN(lengthQuery) || (set.length >= lengthQuery - 2 && set.length <= lengthQuery + 2);
+            const tagsMatch = !tagsQuery || (set.tags && set.tags.some(tag => tag.toLowerCase().includes(tagsQuery)));
+            return lengthMatch && tagsMatch;
+        });
+        renderSets(filteredSets);
     };
     
-    // Unchanged search listeners
+    searchLengthInput.addEventListener('input', filterAndRender);
+    searchTagsInput.addEventListener('input', filterAndRender);
     
     setListContainer.addEventListener('click', (e) => {
         if (!currentUser) return;
@@ -128,14 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const docId = setItem.getAttribute('data-id');
         const userSetsCollection = db.collection('users').doc(currentUser.uid).collection('sets');
 
-        // --- UPDATED TRANSCRIPTION TOGGLE LOGIC ---
-        if (target.classList.contains('toggle-transcript-btn')) {
-            const container = setItem.querySelector('.transcript-preview-container');
-            const isExpanded = container.classList.toggle('expanded');
-            target.textContent = isExpanded ? 'Show Less' : 'Show More';
-        }
-        
-        // Unchanged event listeners for tags, delete, and transcription edit/save
         if (target.classList.contains('toggle-tags-btn')) {
             const truncatedView = setItem.querySelector('.tags-truncated');
             const fullView = setItem.querySelector('.tags-full');
@@ -153,9 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target.classList.contains('delete-btn')) {
             if (confirm('Are you sure?')) userSetsCollection.doc(docId).delete();
         }
+        if (target.classList.contains('toggle-transcription-btn')) {
+            setItem.querySelector('.transcription-content').classList.toggle('d-none');
+        }
         if (target.classList.contains('edit-btn')) {
-            setItem.querySelector('.transcript-preview-container').style.display = 'none';
-            target.closest('.grid').style.display = 'none';
+            setItem.querySelector('.transcription-content').classList.add('d-none');
             setItem.querySelector('.transcription-edit').classList.remove('d-none');
         }
         if (target.classList.contains('save-btn') && !target.classList.contains('save-tags-btn')) {
