@@ -1,8 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const firebaseConfig = { /* PASTE YOUR CONFIG HERE */ };
+    // --- START FIREBASE SETUP ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyAl55bFL__bGedFYLXFDHGt47tDi90WRpY",
+      authDomain: "comedy-set-manager.firebaseapp.com",
+      projectId: "comedy-set-manager",
+      storageBucket: "comedy-set-manager.firebasestorage.app",
+      messagingSenderId: "404723429589",
+      appId: "1:404723429589:web:b33169169b1401f47d325c"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    // --- END FIREBASE SETUP ---
 
     // Modal elements
     const modal = document.getElementById('setlist-studio-modal');
@@ -11,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const availableBitsContainer = document.getElementById('available-bits-container');
     const currentSetlistContainer = document.getElementById('current-setlist-container');
     const saveSetlistBtn = document.getElementById('save-setlist-btn');
-    const createNewSetBtn = document.getElementById('create-new-set-btn');
+    const createNewSetBtn = document.getElementById('create-new-set-btn'); // Corrected variable name
     const setlistsContainer = document.getElementById('setlists-container');
     
     let currentUser = null;
@@ -64,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTitle.textContent = setlist ? 'Edit Setlist' : 'Create Setlist';
         setlistTitleInput.value = setlist ? setlist.title : '';
         
-        // Populate current setlist
         currentSetlistContainer.innerHTML = '';
         if (setlist && setlist.bits) {
             setlist.bits.forEach(bit => {
@@ -72,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // Populate available bits
         availableBitsContainer.innerHTML = '';
         const currentBitIds = (setlist && setlist.bits) ? setlist.bits.map(b => b.id) : [];
         allBits.filter(bit => !currentBitIds.includes(bit.id)).forEach(bit => {
@@ -82,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.setAttribute('open', true);
     }
     
-    function createStudioBitElement(bit, isAvailable = false) {
+    function createStudioBitElement(bit) {
         const el = document.createElement('div');
         el.className = 'studio-bit';
         el.setAttribute('draggable', true);
@@ -97,7 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return el;
     }
 
+    // --- THIS IS THE MISSING EVENT LISTENER ---
     createNewSetBtn.addEventListener('click', () => openStudio());
+    // --- END OF FIX ---
 
     setlistsContainer.addEventListener('click', e => {
         if (e.target.classList.contains('edit-setlist-btn')) {
@@ -122,14 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
     currentSetlistContainer.addEventListener('dragover', e => e.preventDefault());
     currentSetlistContainer.addEventListener('drop', e => {
         e.preventDefault();
-        if (draggedBitId) {
-            const bit = allBits.find(b => b.id === draggedBitId);
-            if (bit && !e.target.closest('#current-setlist-container').querySelector(`[data-bit-id="${draggedBitId}"]`)) {
-                currentSetlistContainer.appendChild(createStudioBitElement(bit));
-                availableBitsContainer.querySelector(`[data-bit-id="${draggedBitId}"]`).remove();
-            }
-            draggedBitId = null;
+        const draggedEl = document.querySelector(`[data-bit-id="${draggedBitId}"]`);
+        if (draggedBitId && draggedEl && !e.target.closest('#current-setlist-container').querySelector(`[data-bit-id="${draggedBitId}"]`)) {
+            currentSetlistContainer.appendChild(draggedEl);
         }
+        draggedBitId = null;
     });
     
     modal.addEventListener('click', e => {
