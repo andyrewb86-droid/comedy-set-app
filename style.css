@@ -176,3 +176,15 @@ nav a {
     margin-top: 0.5rem;
 }
 
+/* Makes the transcript toggle look like a link */
+.toggle-transcript-btn {
+    font-size: 0.7em;
+    margin-left: 0.5rem;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    color: var(--primary);
+    padding: 0;
+    font-weight: normal;
+}
+
