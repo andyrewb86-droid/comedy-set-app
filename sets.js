@@ -117,18 +117,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- NEW, IMPROVED DRAG AND DROP LOGIC ---
+    // Drag and Drop Logic (unchanged)
     let draggedElement = null;
-
     document.addEventListener('dragstart', e => {
         if (e.target.classList.contains('studio-bit')) {
             draggedElement = e.target;
-            setTimeout(() => {
-                e.target.style.opacity = '0.5';
-            }, 0);
+            setTimeout(() => e.target.style.opacity = '0.5', 0);
         }
     });
-
     document.addEventListener('dragend', e => {
         if (draggedElement) {
             draggedElement.style.opacity = '1';
@@ -136,17 +132,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
         }
     });
-
     [availableBitsContainer, currentSetlistContainer].forEach(container => {
         container.addEventListener('dragover', e => {
             e.preventDefault();
             const afterElement = getDragAfterElement(container, e.clientY);
-            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
             if (afterElement) {
                 afterElement.classList.add('drag-over');
             }
         });
-
         container.addEventListener('drop', e => {
             e.preventDefault();
             if (draggedElement) {
@@ -159,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
-
     function getDragAfterElement(container, y) {
         const draggableElements = [...container.querySelectorAll('.studio-bit:not([style*="opacity: 0.5"])')];
         return draggableElements.reduce((closest, child) => {
@@ -172,14 +165,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
-    // --- END OF NEW DRAG AND DROP LOGIC ---
     
+    // --- CORRECTED MODAL CLICK LISTENER ---
     modal.addEventListener('click', e => {
-        if (e.target.classList.contains('close')) modal.removeAttribute('open');
-        if (e.target.classList.contains('toggle-transcript-btn')) {
-            const transcriptDiv = e.target.nextElementSibling;
-            const isHidden = transcriptDiv.classList.toggle('d-none');
-            e.target.textContent = isHidden ? '(show transcript)' : '(hide transcript)';
+        const target = e.target;
+        if (target.classList.contains('close')) {
+            modal.removeAttribute('open');
+        }
+        if (target.classList.contains('toggle-transcript-btn')) {
+            // Find the transcript div within the same parent <p> tag
+            const transcriptDiv = target.parentElement.querySelector('.studio-bit-transcript');
+            if (transcriptDiv) {
+                const isHidden = transcriptDiv.classList.toggle('d-none');
+                target.textContent = isHidden ? '(show transcript)' : '(hide transcript)';
+            }
         }
     });
 
@@ -192,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const bitElements = currentSetlistContainer.querySelectorAll('.studio-bit');
         const bitsInSet = Array.from(bitElements).map(el => {
             return allBits.find(b => b.id === el.dataset.bitId);
-        }).filter(Boolean); // Filter out any undefined bits
+        }).filter(Boolean);
 
         const setlistData = { title: title, bits: bitsInSet };
         const userSetlists = db.collection('users').doc(currentUser.uid).collection('setlists');
