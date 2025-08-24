@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Performance History - Comedy Set Manager</title>
+    <title>Gig History - Comedy Set Manager</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
     <link rel="stylesheet" href="style.css">
 </head>
@@ -20,7 +20,6 @@
                 <li><a href="history.html" role="button" class="contrast">Gig History</a></li>
             </ul>
         </nav>
-
         <h1>Performance History 📓</h1>
         
         <article>
@@ -36,16 +35,16 @@
         <article>
             <header>
                 <a href="#close" aria-label="Close" class="close"></a>
-                <h5>Link Bits to Your Performance</h5>
+                <h5>Link & Order Bits for This Performance</h5>
             </header>
             <div class="grid">
                 <div>
-                    <h6>Transcript</h6>
-                    <div id="modal-transcript" class="transcript-preview"></div>
+                    <h6>Your Bit Library</h6>
+                    <div id="modal-available-bits" class="bit-list"></div>
                 </div>
                 <div>
-                    <h6>Select Bits Performed</h6>
-                    <div id="modal-bits-checklist"></div>
+                    <h6>Setlist Performed (Drag to reorder)</h6>
+                    <div id="modal-setlist-bits" class="bit-list"></div>
                 </div>
             </div>
             <footer>
