@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const availableBitsContainer = document.getElementById('modal-available-bits');
     const setlistBitsContainer = document.getElementById('modal-setlist-bits');
     const savePerformanceBtn = document.getElementById('save-performance-btn');
+    const analysisLinkInput = document.getElementById('analysis-link');
 
     let currentUser = null;
     let allUserBits = [];
@@ -63,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             parsedPerformanceData.fullTranscript = transcript;
 
+            analysisLinkInput.value = ''; // Clear previous link
             availableBitsContainer.innerHTML = allUserBits.map(bit => `
                 <div class="available-bit-item">
                     <input type="checkbox" data-bit-id="${bit.id}" id="check-${bit.id}">
@@ -102,11 +104,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     savePerformanceBtn.addEventListener('click', () => {
         if (!currentUser || !parsedPerformanceData) return;
+        
         const orderedBitElements = setlistBitsContainer.querySelectorAll('.studio-bit');
         const orderedBits = Array.from(orderedBitElements).map(el => {
             return allUserBits.find(b => b.id === el.dataset.bitId);
         });
-        const performanceToSave = { ...parsedPerformanceData, linkedBits: orderedBits, createdAt: new Date() };
+
+        // Get the value from the new analysis link input
+        const analysisLink = analysisLinkInput.value.trim();
+
+        const performanceToSave = { 
+            ...parsedPerformanceData, 
+            linkedBits: orderedBits, 
+            analysisLink: analysisLink, // Add the new field
+            createdAt: new Date() 
+        };
 
         db.collection('users').doc(currentUser.uid).collection('gigs').add(performanceToSave)
             .then(() => {
@@ -146,6 +158,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             }
+            
+            // NEW: Add a button for the analysis link if it exists
+            let analysisLinkHTML = '';
+            if (gig.analysisLink) {
+                analysisLinkHTML = `<a href="${gig.analysisLink}" target="_blank" role="button" class="contrast outline">View Analysis Page</a>`;
+            }
 
             return `
                 <article>
@@ -157,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h6>Setlist Performed:</h6>
                     <ul>${setlist || '<li>No setlist linked.</li>'}</ul>
                     ${transcriptHTML}
+                    ${analysisLinkHTML}
                 </article>
             `;
         }).join('');
@@ -182,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    // Drag and Drop Logic (unchanged)
     let draggedElement = null;
     document.addEventListener('dragstart', e => {
         if (e.target.classList.contains('studio-bit')) {
