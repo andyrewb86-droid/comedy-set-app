@@ -55,6 +55,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const tags = set.tags || [];
             const tagsText = tags.join(', ');
 
+            // --- NEW TAG TRUNCATION LOGIC ---
+            let tagsHTML = '';
+            const maxTagsToShow = 5;
+            if (tags.length > maxTagsToShow) {
+                const truncatedTags = tags.slice(0, maxTagsToShow).map(tag => `<span class="tag">${tag}</span>`).join(' ');
+                const fullTags = tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
+                const remainingCount = tags.length - maxTagsToShow;
+                tagsHTML = `
+                    <span class="tags-truncated">${truncatedTags}<button class="toggle-tags-btn">+ ${remainingCount} more</button></span>
+                    <span class="tags-full d-none">${fullTags}<button class="toggle-tags-btn">Show Less</button></span>
+                `;
+            } else {
+                tagsHTML = tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags';
+            }
+
             const transcriptToggleBtn = hasTranscription ? `<button class="toggle-transcript-btn">(show transcript)</button>` : '';
 
             setElement.innerHTML = `
@@ -64,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>Length:</strong> ${set.length} min</p>
                         <div class="tags-container">
                             <div class="tags-display-view">
-                                <p><strong>Tags:</strong> ${tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags'}</p>
+                                <p><strong>Tags:</strong> ${tagsHTML}</p>
                                 <button class="edit-tags-btn secondary outline">Edit</button>
                             </div>
                             <div class="tags-edit-view d-none">
@@ -111,6 +126,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!setItem) return;
         const docId = setItem.getAttribute('data-id');
         const userSetsCollection = db.collection('users').doc(currentUser.uid).collection('sets');
+
+        // --- NEW CLICK HANDLER FOR TOGGLING TAGS ---
+        if (target.classList.contains('toggle-tags-btn')) {
+            const displayView = target.closest('.tags-display-view');
+            const truncatedView = displayView.querySelector('.tags-truncated');
+            const fullView = displayView.querySelector('.tags-full');
+            truncatedView.classList.toggle('d-none');
+            fullView.classList.toggle('d-none');
+        }
 
         if (target.classList.contains('toggle-transcript-btn')) {
             const transcriptContainer = setItem.querySelector('.full-transcript-container');
