@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const tags = set.tags || [];
             const tagsText = tags.join(', ');
 
-            // Tag truncation logic
             let tagsHTML = '';
             const maxTagsToShow = 5;
             if (tags.length > maxTagsToShow) {
@@ -71,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 tagsHTML = tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags';
             }
             
-            // New transcript logic
             let transcriptionHTML = '';
             if(hasTranscription) {
                 transcriptionHTML = `
@@ -148,11 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const docId = setItem.getAttribute('data-id');
         const userSetsCollection = db.collection('users').doc(currentUser.uid).collection('sets');
 
+        // --- THIS IS THE CORRECTED AND ADDED LOGIC ---
         if (target.classList.contains('toggle-transcript-btn')) {
             const container = setItem.querySelector('.transcript-preview-container');
             const isExpanded = container.classList.toggle('expanded');
             target.textContent = isExpanded ? 'Show Less' : 'Show More';
         }
+        // --- END OF FIX ---
 
         if (target.classList.contains('edit-btn')) {
             setItem.querySelector('.transcription-display').classList.add('d-none');
