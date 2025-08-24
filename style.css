@@ -32,11 +32,35 @@ nav a {
 }
 
 /* Bit & Setlist Item Styles */
+.set-item, .gig-item, .show-item {
+    padding: 1rem;
+    background-color: var(--card-background-color);
+    border: var(--card-border);
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--card-box-shadow);
+    margin-bottom: 1rem;
+}
+
 .set-item-main {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
+
+/* --- NEW DELETE BUTTON STYLES --- */
+.delete-btn, .delete-setlist-btn, .delete-gig-btn {
+    --pico-font-size: 0.8rem;
+    --pico-padding: 0.375rem 0.75rem;
+    background-color: var(--pico-color-red-500);
+    border-color: var(--pico-color-red-500);
+    color: #fff;
+}
+
+.delete-btn:hover, .delete-setlist-btn:hover, .delete-gig-btn:hover {
+    background-color: var(--pico-color-red-600);
+    border-color: var(--pico-color-red-600);
+}
+/* --- END OF NEW STYLES --- */
 
 .tags-display-view, .tags-edit-view {
     display: flex;
@@ -45,139 +69,7 @@ nav a {
     margin-top: 0.5rem;
 }
 
-.toggle-tags-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    color: var(--primary);
-    text-decoration: underline;
-    cursor: pointer;
-    font-size: 0.8em;
-    margin-left: 5px;
-}
-
-/* Transcription Preview and Expansion Styles */
-.transcript-preview-container {
-    max-height: 4.5em; /* Approx 3 lines of text */
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
-    position: relative;
-    white-space: pre-wrap;
-    font-style: italic;
-    color: var(--muted-color);
-    padding-bottom: 1.5rem; /* Space for the fade-out effect */
-}
-
-.transcript-preview-container::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2rem;
-    background: linear-gradient(to bottom, transparent, var(--card-background-color));
-    transition: opacity 0.3s ease-in-out;
-}
-
-.transcript-preview-container.expanded {
-    max-height: 1000px; /* A large value to allow full expansion */
-    font-style: normal;
-    color: var(--color);
-    padding-bottom: 0;
-}
-
-.transcript-preview-container.expanded::after {
-    opacity: 0;
-}
-
-/* Drag and Drop Styles (for Sets page) */
-.draggable-bit {
-    padding: 1rem;
-    background-color: var(--card-background-color);
-    border: var(--card-border);
-    border-radius: var(--card-border-radius);
-    margin-bottom: 1rem;
-    cursor: grab;
-}
-
-.draggable-bit.dragging {
-    opacity: 0.5;
-}
-
-.draggable-bit p {
-    white-space: pre-wrap;
-    font-family: monospace;
-    background-color: var(--code-background-color);
-    padding: 1rem;
-    border-radius: var(--border-radius);
-}
-
-/* Styles for Setlist Studio */
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.bit-list {
-    min-height: 300px;
-    max-height: 50vh;
-    overflow-y: auto;
-    border: var(--card-border);
-    border-radius: var(--border-radius);
-    padding: 1rem;
-}
-
-.studio-bit {
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-    background: var(--card-background-color);
-    border: var(--card-border);
-    cursor: grab;
-}
-
-.studio-bit p {
-    margin-bottom: 0;
-    font-size: 0.9em;
-}
-
-.studio-bit-transcript {
-    font-style: italic;
-    font-size: 0.8em;
-    margin-top: 0.5rem;
-    padding-left: 1rem;
-    border-left: 2px solid var(--primary);
-    white-space: pre-wrap;
-}
-
-.toggle-transcript-btn {
-    font-size: 0.7em;
-    margin-left: 0.5rem;
-    text-decoration: underline;
-    background: none;
-    border: none;
-    color: var(--primary);
-    padding: 0;
-}
-
-/* Styles for an improved Drag and Drop experience */
-.drag-handle {
-    cursor: grab;
-    margin-right: 10px;
-    color: var(--muted-border-color);
-    touch-action: none; /* Helps with touch devices */
-}
-
-/* This class creates the "move out of the way" effect */
-.drag-over {
-    border-top: 2px solid var(--primary);
-    padding-top: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-/* Makes the transcript toggle look like a link */
-.toggle-transcript-btn {
+.toggle-tags-btn, .toggle-transcript-btn {
     font-size: 0.7em;
     margin-left: 0.5rem;
     text-decoration: underline;
@@ -188,14 +80,19 @@ nav a {
     font-weight: normal;
 }
 
-/* Styles for History Page a*/
-#modal-bits-checklist .grid {
-    --grid-cols: 1;
+/* Drag and Drop Styles (for Sets page) */
+.studio-bit {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: var(--card-background-color);
+    border: var(--card-border);
+    cursor: grab;
 }
-
-.available-bit-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.drag-handle {
+    cursor: grab;
+    margin-right: 10px;
+    color: var(--muted-border-color);
 }
-
+.drag-over {
+    border-top: 2px solid var(--primary);
+}
