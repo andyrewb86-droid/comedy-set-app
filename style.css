@@ -19,6 +19,21 @@ nav a {
     display: none !important;
 }
 
+/* --- NEW DELETE BUTTON STYLES --- */
+.delete-btn, .delete-setlist-btn, .delete-gig-btn {
+    --pico-font-size: 0.8rem;
+    --pico-padding: 0.375rem 0.75rem;
+    background-color: var(--pico-color-red-500);
+    border-color: var(--pico-color-red-500);
+    color: #fff;
+}
+.delete-btn:hover, .delete-setlist-btn:hover, .delete-gig-btn:hover {
+    --pico-background-color: var(--pico-color-red-600);
+    --pico-border-color: var(--pico-color-red-600);
+}
+/* --- END OF NEW STYLES --- */
+
+
 /* Tag Styles */
 .tag {
     display: inline-block;
@@ -31,7 +46,7 @@ nav a {
     margin-bottom: 5px;
 }
 
-/* Bit & Setlist Item Styles */
+/* Item Styles */
 .set-item, .gig-item, .show-item {
     padding: 1rem;
     background-color: var(--card-background-color);
@@ -40,27 +55,11 @@ nav a {
     box-shadow: var(--card-box-shadow);
     margin-bottom: 1rem;
 }
-
 .set-item-main {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
-
-/* --- NEW DELETE BUTTON STYLES --- */
-.delete-btn, .delete-setlist-btn, .delete-gig-btn {
-    --pico-font-size: 0.8rem;
-    --pico-padding: 0.375rem 0.75rem;
-    background-color: var(--pico-color-red-500);
-    border-color: var(--pico-color-red-500);
-    color: #fff;
-}
-
-.delete-btn:hover, .delete-setlist-btn:hover, .delete-gig-btn:hover {
-    background-color: var(--pico-color-red-600);
-    border-color: var(--pico-color-red-600);
-}
-/* --- END OF NEW STYLES --- */
 
 .tags-display-view, .tags-edit-view {
     display: flex;
@@ -68,7 +67,6 @@ nav a {
     gap: 10px;
     margin-top: 0.5rem;
 }
-
 .toggle-tags-btn, .toggle-transcript-btn {
     font-size: 0.7em;
     margin-left: 0.5rem;
