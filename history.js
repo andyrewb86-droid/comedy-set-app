@@ -37,8 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         db.collection('users').doc(userId).collection('sets').orderBy('title').onSnapshot(snapshot => {
             allUserBits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         });
-        
-        // THIS IS THE CORRECTED LINE: Sort by 'recordedDate'
         db.collection('users').doc(userId).collection('gigs').orderBy('recordedDate', 'desc').onSnapshot(snapshot => {
             renderGigHistory(snapshot.docs);
         });
@@ -56,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             parsedPerformanceData = {};
             const lines = transcript.split('\n');
-            // This line correctly parses the date from the file
             parsedPerformanceData.recordedDate = new Date(lines.find(l => l.startsWith('Recorded:')).split(': ')[1].trim());
             parsedPerformanceData.venue = lines[0].trim();
             parsedPerformanceData.stats = {
@@ -109,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const orderedBits = Array.from(orderedBitElements).map(el => {
             return allUserBits.find(b => b.id === el.dataset.bitId);
         });
-        // We add 'createdAt' for internal tracking, but 'recordedDate' is used for display and sorting
         const performanceToSave = { ...parsedPerformanceData, linkedBits: orderedBits, createdAt: new Date() };
 
         db.collection('users').doc(currentUser.uid).collection('gigs').add(performanceToSave)
@@ -127,8 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         gigHistoryContainer.innerHTML = gigDocs.map(doc => {
             const gig = doc.data();
-            // This now correctly uses the date from the file
-            const gigDate = gig.recordedDate.toDate().toLocaleDateString();
+            const gigDate = gig.recordedDate ? gig.recordedDate.toDate().toLocaleDateString() : 'Date not available';
             const setlist = (gig.linkedBits || []).map(bit => `<li>${bit.title}</li>`).join('');
             
             let statsHTML = '';
@@ -156,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <article>
                     <div class="grid">
                         <h6>${gig.venue} on ${gigDate}</h6>
-                        <button class="delete-gig-btn secondary outline" data-id="${doc.id}" style="text-align: right;">Delete</button>
+                        <button class="delete-gig-btn" data-id="${doc.id}" style="text-align: right;">Delete</button>
                     </div>
                     ${statsHTML}
                     <h6>Setlist Performed:</h6>
