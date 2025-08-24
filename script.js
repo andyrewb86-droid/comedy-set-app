@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- START FIREBASE SETUP ---
     const firebaseConfig = {
       apiKey: "AIzaSyAl55bFL__bGedFYLXFDHGt47tDi90WRpY",
       authDomain: "comedy-set-manager.firebaseapp.com",
@@ -7,9 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
       messagingSenderId: "404723429589",
       appId: "1:404723429589:web:b33169169b1401f47d325c"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    // --- END FIREBASE SETUP ---
 
     const userName = document.getElementById('user-name');
     const logoutBtn = document.getElementById('logout-btn');
@@ -34,10 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title: document.getElementById('set-title').value,
             length: parseFloat(document.getElementById('set-length').value),
             tags: document.getElementById('set-tags').value.split(',').map(t => t.trim()).filter(Boolean),
-            transcription: ""
+            // THIS LINE IS NOW FIXED
+            transcription: document.getElementById('set-transcription').value 
         };
         db.collection('users').doc(currentUser.uid).collection('sets').add(newSet);
         addSetForm.reset();
-        alert('Bit added! You can add the transcription on the "My Bits" page.');
+        alert('Bit added successfully!');
     });
 });
