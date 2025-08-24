@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- START FIREBASE SETUP ---
     const firebaseConfig = {
       apiKey: "AIzaSyAl55bFL__bGedFYLXFDHGt47tDi90WRpY",
       authDomain: "comedy-set-manager.firebaseapp.com",
@@ -11,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-    // --- END FIREBASE SETUP ---
 
     const setListContainer = document.getElementById('set-list-container');
     const searchLengthInput = document.getElementById('search-length');
@@ -30,47 +28,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadUserSets(userId) {
-        const setsCollection = db.collection('users').doc(userId).collection('sets');
-        setsCollection.orderBy('title').onSnapshot(snapshot => {
+        db.collection('users').doc(userId).collection('sets').orderBy('title').onSnapshot(snapshot => {
             comedySets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             filterAndRender();
         });
     }
 
     const renderSets = (setsToRender) => {
-        if (!setListContainer) return;
         setListContainer.innerHTML = '';
         if (!setsToRender || setsToRender.length === 0) {
-            setListContainer.innerHTML = '<article><p>No bits found. Try adding some on the Dashboard!</p></article>';
+            setListContainer.innerHTML = '<article><p>No bits found.</p></article>';
             return;
         }
-
-        setsToRender.forEach((set) => {
+        setsToRender.forEach(set => {
             const setElement = document.createElement('article');
             setElement.className = 'set-item';
             setElement.setAttribute('data-id', set.id);
-            
             const transcriptionText = set.transcription || '';
-            const hasTranscription = transcriptionText.trim() !== '';
             const tags = set.tags || [];
             const tagsText = tags.join(', ');
-
-            // --- NEW TAG TRUNCATION LOGIC ---
-            let tagsHTML = '';
-            const maxTagsToShow = 5;
-            if (tags.length > maxTagsToShow) {
-                const truncatedTags = tags.slice(0, maxTagsToShow).map(tag => `<span class="tag">${tag}</span>`).join(' ');
-                const fullTags = tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
-                const remainingCount = tags.length - maxTagsToShow;
-                tagsHTML = `
-                    <span class="tags-truncated">${truncatedTags}<button class="toggle-tags-btn">+ ${remainingCount} more</button></span>
-                    <span class="tags-full d-none">${fullTags}<button class="toggle-tags-btn">Show Less</button></span>
-                `;
-            } else {
-                tagsHTML = tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags';
-            }
-
-            const transcriptToggleBtn = hasTranscription ? `<button class="toggle-transcript-btn">(show transcript)</button>` : '';
+            const transcriptToggleBtn = transcriptionText ? `<button class="toggle-transcript-btn">(show transcript)</button>` : '';
 
             setElement.innerHTML = `
                 <div class="set-item-main">
@@ -79,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>Length:</strong> ${set.length} min</p>
                         <div class="tags-container">
                             <div class="tags-display-view">
-                                <p><strong>Tags:</strong> ${tagsHTML}</p>
+                                <p><strong>Tags:</strong> ${tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags'}</p>
                                 <button class="edit-tags-btn secondary outline">Edit</button>
                             </div>
                             <div class="tags-edit-view d-none">
@@ -88,9 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     </div>
-                    <button class="delete-btn secondary outline">Delete</button>
+                    <button class="delete-btn">Delete</button>
                 </div>
-                
                 <div class="full-transcript-container d-none">
                     <p style="white-space: pre-wrap;">${transcriptionText}</p>
                     <button class="edit-btn secondary outline">Edit</button>
@@ -105,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const filterAndRender = () => {
-        if (!searchLengthInput || !searchTagsInput) return;
         const lengthQuery = parseFloat(searchLengthInput.value);
         const tagsQuery = searchTagsInput.value.toLowerCase().trim();
         const filteredSets = comedySets.filter(set => {
@@ -127,21 +102,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const docId = setItem.getAttribute('data-id');
         const userSetsCollection = db.collection('users').doc(currentUser.uid).collection('sets');
 
-        // --- NEW CLICK HANDLER FOR TOGGLING TAGS ---
-        if (target.classList.contains('toggle-tags-btn')) {
-            const displayView = target.closest('.tags-display-view');
-            const truncatedView = displayView.querySelector('.tags-truncated');
-            const fullView = displayView.querySelector('.tags-full');
-            truncatedView.classList.toggle('d-none');
-            fullView.classList.toggle('d-none');
+        if (target.classList.contains('delete-btn')) {
+            if (confirm('Are you sure you want to delete this bit?')) {
+                userSetsCollection.doc(docId).delete();
+            }
         }
-
         if (target.classList.contains('toggle-transcript-btn')) {
             const transcriptContainer = setItem.querySelector('.full-transcript-container');
             const isHidden = transcriptContainer.classList.toggle('d-none');
             target.textContent = isHidden ? '(show transcript)' : '(hide transcript)';
         }
-
         if (target.classList.contains('edit-tags-btn')) {
             setItem.querySelector('.tags-display-view').classList.add('d-none');
             setItem.querySelector('.tags-edit-view').classList.remove('d-none');
@@ -149,9 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target.classList.contains('save-tags-btn')) {
             const newTagsValue = setItem.querySelector('.tags-edit-view input').value;
             userSetsCollection.doc(docId).update({ tags: newTagsValue.split(',').map(tag => tag.trim()).filter(Boolean) });
-        }
-        if (target.classList.contains('delete-btn')) {
-            if (confirm('Are you sure?')) userSetsCollection.doc(docId).delete();
         }
         if (target.classList.contains('edit-btn')) {
             setItem.querySelector('.full-transcript-container').classList.add('d-none');
