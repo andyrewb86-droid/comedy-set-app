@@ -19,14 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTranscript = document.getElementById('modal-transcript');
     const modalBitsChecklist = document.getElementById('modal-bits-checklist');
     const savePerformanceBtn = document.getElementById('save-performance-btn');
-    const analysisSection = document.getElementById('analysis-section');
-    const analyzeBtn = document.getElementById('analyze-with-gemini-btn');
-    const geminiApiKeyInput = document.getElementById('gemini-api-key');
 
     let currentUser = null;
     let allUserBits = [];
     let parsedPerformanceData = {};
-    let currentFileContent = null;
 
     auth.onAuthStateChanged(user => {
         if (user) {
@@ -48,86 +44,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     uploadInput.addEventListener('change', e => {
         const file = e.target.files[0];
-        if (!file) {
-            analysisSection.classList.add('d-none');
-            currentFileContent = null;
-            return;
-        };
+        if (!file) return;
         const reader = new FileReader();
         reader.onload = event => {
-            currentFileContent = event.target.result;
-            analysisSection.classList.remove('d-none');
+            const content = event.target.result;
+            openLinkingModal(content);
         };
         reader.readAsText(file);
     });
 
-    analyzeBtn.addEventListener('click', async () => {
-        const apiKey = geminiApiKeyInput.value.trim();
-        if (!apiKey) {
-            alert('Please enter your Gemini API key.');
-            return;
-        }
-        if (!currentFileContent) {
-            alert('Please upload a file first.');
-            return;
-        }
-
-        analyzeBtn.setAttribute('aria-busy', 'true');
-        analyzeBtn.textContent = 'Analyzing...';
-
-        const prompt = `
-            You are an AI assistant for a comedian. Your task is to analyze a performance transcript and determine which of the comedian's pre-written bits were performed.
-
-            Here is the comedian's library of bits in JSON format. Each bit has an "id", "title", and "transcription":
-            ${JSON.stringify(allUserBits.map(b => ({id: b.id, title: b.title, transcription: b.transcription})))}
-
-            Here is the transcript of the recent performance:
-            ---
-            ${currentFileContent}
-            ---
-
-            Compare the performance transcript to the bit library. Identify which bits from the library appear in the performance. The performance may contain improv or crowd work not in the library, so only match bits that are clearly present.
-            
-            Return your answer ONLY as a single, valid JSON array of the string IDs of the matched bits. For example: ["bitId1", "bitId3", "bitId8"]
-        `;
-        
+    function openLinkingModal(transcript) {
         try {
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-            
-            const data = await response.json();
-            const geminiResponseText = data.candidates[0].content.parts[0].text;
-            
-            // --- THIS IS THE CORRECTED PARSING LOGIC ---
-            // Find the start and end of the JSON array
-            const startIndex = geminiResponseText.indexOf('[');
-            const endIndex = geminiResponseText.lastIndexOf(']');
-            if (startIndex === -1 || endIndex === -1) {
-                throw new Error("Gemini did not return a valid JSON array.");
-            }
-            const jsonString = geminiResponseText.substring(startIndex, endIndex + 1);
-            const matchedIds = JSON.parse(jsonString);
-            // --- END OF CORRECTION ---
-
-            openLinkingModal(currentFileContent, matchedIds);
-
-        } catch (error) {
-            alert('An error occurred during analysis. Check the console for details.');
-            console.error(error);
-        } finally {
-            analyzeBtn.removeAttribute('aria-busy');
-            analyzeBtn.textContent = 'Analyze Setlist with Gemini';
-        }
-    });
-
-    function openLinkingModal(transcript, preSelectedIds = []) {
-        try {
-            parsedPerformanceData = {}; // Reset
+            parsedPerformanceData = {};
             const lines = transcript.split('\n');
             parsedPerformanceData.recordedDate = new Date(lines.find(l => l.startsWith('Recorded:')).split(': ')[1].trim());
             parsedPerformanceData.venue = lines[0].trim();
@@ -146,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTranscript.textContent = transcript;
         modalBitsChecklist.innerHTML = allUserBits.map(bit => `
             <label>
-                <input type="checkbox" value="${bit.id}" ${preSelectedIds.includes(bit.id) ? 'checked' : ''}/>
+                <input type="checkbox" value="${bit.id}"/>
                 ${bit.title} (${bit.length} min)
             </label>
         `).join('');
@@ -163,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(() => {
                 linkBitsModal.removeAttribute('open');
                 uploadInput.value = '';
-                analysisSection.classList.add('d-none');
                 alert('Performance saved successfully!');
             });
     });
@@ -194,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
     
-    // This is for the 'close' button on the modal
     linkBitsModal.addEventListener('click', e => {
         if (e.target.classList.contains('close')) {
             linkBitsModal.removeAttribute('open');
