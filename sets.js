@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="studio-bit-transcript d-none">${bit.transcription}</div>
         ` : '';
 
-        // THIS IS THE CORRECTED LINE: Changed the surrounding <p> to a <div>
         el.innerHTML = `<div><span class="drag-handle">☰</span><strong>${bit.title}</strong> (${bit.length} min) ${transcriptHTML}</div>`;
         return el;
     }
@@ -118,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Drag and Drop Logic ---
     let draggedElement = null;
     document.addEventListener('dragstart', e => {
         if (e.target.classList.contains('studio-bit')) {
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => e.target.style.opacity = '0.5', 0);
         }
     });
-    document.addEventListener('dragend', e => {
+    document.addEventListener('dragend', () => {
         if (draggedElement) {
             draggedElement.style.opacity = '1';
             draggedElement = null;
@@ -137,19 +137,13 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const afterElement = getDragAfterElement(container, e.clientY);
             container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-            if (afterElement) {
-                afterElement.classList.add('drag-over');
-            }
+            if (afterElement) afterElement.classList.add('drag-over');
         });
         container.addEventListener('drop', e => {
             e.preventDefault();
             if (draggedElement) {
                 const afterElement = getDragAfterElement(container, e.clientY);
-                if (afterElement == null) {
-                    container.appendChild(draggedElement);
-                } else {
-                    container.insertBefore(draggedElement, afterElement);
-                }
+                container.insertBefore(draggedElement, afterElement);
             }
         });
     });
@@ -166,15 +160,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
     
+    // --- Modal Click and Save Logic ---
     modal.addEventListener('click', e => {
-        if (e.target.classList.contains('close')) {
+        const target = e.target;
+        if (target.classList.contains('close')) {
             modal.removeAttribute('open');
         }
-        if (e.target.classList.contains('toggle-transcript-btn')) {
-            const transcriptDiv = e.target.parentElement.querySelector('.studio-bit-transcript');
+        if (target.classList.contains('toggle-transcript-btn')) {
+            const transcriptDiv = target.parentElement.querySelector('.studio-bit-transcript');
             if (transcriptDiv) {
                 const isHidden = transcriptDiv.classList.toggle('d-none');
-                e.target.textContent = isHidden ? '(show transcript)' : '(hide transcript)';
+                target.textContent = isHidden ? '(show transcript)' : '(hide transcript)';
             }
         }
     });
