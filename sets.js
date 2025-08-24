@@ -13,14 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     // --- END FIREBASE SETUP ---
 
-    // Modal elements
     const modal = document.getElementById('setlist-studio-modal');
     const modalTitle = document.getElementById('studio-modal-title');
     const setlistTitleInput = document.getElementById('studio-setlist-title');
     const availableBitsContainer = document.getElementById('available-bits-container');
     const currentSetlistContainer = document.getElementById('current-setlist-container');
     const saveSetlistBtn = document.getElementById('save-setlist-btn');
-    const createNewSetBtn = document.getElementById('create-new-set-btn'); // Corrected variable name
+    const createNewSetBtn = document.getElementById('create-new-set-btn');
     const setlistsContainer = document.getElementById('setlists-container');
     
     let currentUser = null;
@@ -41,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         db.collection('users').doc(userId).collection('sets').onSnapshot(snapshot => {
             allBits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         });
-        db.collection('users').doc(userId).collection('setlists').onSnapshot(snapshot => {
+        db.collection('users').doc(userId).collection('setlists').orderBy('title').onSnapshot(snapshot => {
             allSetlists = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderSetlists();
         });
@@ -83,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         availableBitsContainer.innerHTML = '';
         const currentBitIds = (setlist && setlist.bits) ? setlist.bits.map(b => b.id) : [];
         allBits.filter(bit => !currentBitIds.includes(bit.id)).forEach(bit => {
-            availableBitsContainer.appendChild(createStudioBitElement(bit, true));
+            availableBitsContainer.appendChild(createStudioBitElement(bit));
         });
 
         modal.setAttribute('open', true);
@@ -100,13 +99,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="studio-bit-transcript d-none">${bit.transcription}</div>
         ` : '';
 
-        el.innerHTML = `<p><strong>${bit.title}</strong> (${bit.length} min) ${transcriptHTML}</p>`;
+        el.innerHTML = `<p><span class="drag-handle">☰</span><strong>${bit.title}</strong> (${bit.length} min) ${transcriptHTML}</p>`;
         return el;
     }
 
-    // --- THIS IS THE MISSING EVENT LISTENER ---
     createNewSetBtn.addEventListener('click', () => openStudio());
-    // --- END OF FIX ---
 
     setlistsContainer.addEventListener('click', e => {
         if (e.target.classList.contains('edit-setlist-btn')) {
@@ -120,23 +117,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Drag and Drop Logic
-    let draggedBitId = null;
+    // --- NEW, IMPROVED DRAG AND DROP LOGIC ---
+    let draggedElement = null;
+
     document.addEventListener('dragstart', e => {
         if (e.target.classList.contains('studio-bit')) {
-            draggedBitId = e.target.dataset.bitId;
+            draggedElement = e.target;
+            setTimeout(() => {
+                e.target.style.opacity = '0.5';
+            }, 0);
         }
     });
 
-    currentSetlistContainer.addEventListener('dragover', e => e.preventDefault());
-    currentSetlistContainer.addEventListener('drop', e => {
-        e.preventDefault();
-        const draggedEl = document.querySelector(`[data-bit-id="${draggedBitId}"]`);
-        if (draggedBitId && draggedEl && !e.target.closest('#current-setlist-container').querySelector(`[data-bit-id="${draggedBitId}"]`)) {
-            currentSetlistContainer.appendChild(draggedEl);
+    document.addEventListener('dragend', e => {
+        if (draggedElement) {
+            draggedElement.style.opacity = '1';
+            draggedElement = null;
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
         }
-        draggedBitId = null;
     });
+
+    [availableBitsContainer, currentSetlistContainer].forEach(container => {
+        container.addEventListener('dragover', e => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(container, e.clientY);
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            if (afterElement) {
+                afterElement.classList.add('drag-over');
+            }
+        });
+
+        container.addEventListener('drop', e => {
+            e.preventDefault();
+            if (draggedElement) {
+                const afterElement = getDragAfterElement(container, e.clientY);
+                if (afterElement == null) {
+                    container.appendChild(draggedElement);
+                } else {
+                    container.insertBefore(draggedElement, afterElement);
+                }
+            }
+        });
+    });
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.studio-bit:not([style*="opacity: 0.5"])')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+    // --- END OF NEW DRAG AND DROP LOGIC ---
     
     modal.addEventListener('click', e => {
         if (e.target.classList.contains('close')) modal.removeAttribute('open');
@@ -156,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const bitElements = currentSetlistContainer.querySelectorAll('.studio-bit');
         const bitsInSet = Array.from(bitElements).map(el => {
             return allBits.find(b => b.id === el.dataset.bitId);
-        });
+        }).filter(Boolean); // Filter out any undefined bits
 
         const setlistData = { title: title, bits: bitsInSet };
         const userSetlists = db.collection('users').doc(currentUser.uid).collection('setlists');
