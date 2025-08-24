@@ -188,3 +188,14 @@ nav a {
     font-weight: normal;
 }
 
+/* Styles for History Page a*/
+#modal-bits-checklist .grid {
+    --grid-cols: 1;
+}
+
+.available-bit-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
