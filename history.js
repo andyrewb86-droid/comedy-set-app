@@ -56,7 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const lines = transcript.split('\n');
             parsedPerformanceData.recordedDate = new Date(lines.find(l => l.startsWith('Recorded:')).split(': ')[1].trim());
             parsedPerformanceData.venue = lines[0].trim();
-            parsedPerformanceData.stats = { /* ... parsing logic ... */ };
+            parsedPerformanceData.stats = {
+                lpm: lines.find(l => l.startsWith('Laughs per Minute:')).split(': ')[1].trim(),
+                lspm: lines.find(l => l.startsWith('Laugh Seconds per Minute:')).split(': ')[1].trim(),
+                totalDuration: lines.find(l => l.startsWith('Total Duration:')).split(': ')[1].trim(),
+            };
             parsedPerformanceData.fullTranscript = transcript;
 
             availableBitsContainer.innerHTML = allUserBits.map(bit => `
@@ -65,31 +69,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     <label for="check-${bit.id}">${bit.title}</label>
                 </div>
             `).join('');
-
-            setlistBitsContainer.innerHTML = ''; // Clear previous setlist
+            setlistBitsContainer.innerHTML = '';
             linkBitsModal.setAttribute('open', true);
-
         } catch (error) {
             alert("Could not parse file. Ensure it is a valid performance report.");
             console.error("File parsing error:", error);
         }
     }
     
-    // NEW: Handle adding/removing bits from the setlist
     availableBitsContainer.addEventListener('change', e => {
         if (e.target.type === 'checkbox') {
             const bitId = e.target.dataset.bitId;
             if (e.target.checked) {
-                // Add bit to setlist
                 const bit = allUserBits.find(b => b.id === bitId);
                 const bitElement = createDraggableBitElement(bit);
                 setlistBitsContainer.appendChild(bitElement);
             } else {
-                // Remove bit from setlist
                 const bitElement = setlistBitsContainer.querySelector(`[data-bit-id="${bitId}"]`);
-                if (bitElement) {
-                    bitElement.remove();
-                }
+                if (bitElement) bitElement.remove();
             }
         }
     });
@@ -105,12 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     savePerformanceBtn.addEventListener('click', () => {
         if (!currentUser || !parsedPerformanceData) return;
-        
         const orderedBitElements = setlistBitsContainer.querySelectorAll('.studio-bit');
         const orderedBits = Array.from(orderedBitElements).map(el => {
             return allUserBits.find(b => b.id === el.dataset.bitId);
         });
-
         const performanceToSave = { ...parsedPerformanceData, linkedBits: orderedBits, createdAt: new Date() };
 
         db.collection('users').doc(currentUser.uid).collection('gigs').add(performanceToSave)
@@ -130,24 +125,54 @@ document.addEventListener('DOMContentLoaded', () => {
             const gig = doc.data();
             const gigDate = gig.createdAt.toDate().toLocaleDateString();
             const setlist = (gig.linkedBits || []).map(bit => `<li>${bit.title}</li>`).join('');
+            
+            let statsHTML = '';
+            if (gig.stats) {
+                statsHTML = `
+                    <div class="grid">
+                        <span><strong>Laughs/Min:</strong> ${gig.stats.lpm}</span>
+                        <span><strong>Laugh Secs/Min:</strong> ${gig.stats.lspm}</span>
+                        <span><strong>Duration:</strong> ${gig.stats.totalDuration}</span>
+                    </div>
+                `;
+            }
+
+            let transcriptHTML = '';
+            if (gig.fullTranscript) {
+                transcriptHTML = `
+                    <button class="toggle-transcript-btn secondary outline">Show Transcript</button>
+                    <div class="full-transcript-container d-none">
+                        <p style="white-space: pre-wrap;">${gig.fullTranscript}</p>
+                    </div>
+                `;
+            }
+
             return `
                 <article>
                     <div class="grid">
                         <h6>${gig.venue} on ${gigDate}</h6>
                         <button class="delete-gig-btn secondary outline" data-id="${doc.id}" style="text-align: right;">Delete</button>
                     </div>
+                    ${statsHTML}
+                    <h6>Setlist Performed:</h6>
                     <ul>${setlist || '<li>No setlist linked.</li>'}</ul>
+                    ${transcriptHTML}
                 </article>
             `;
         }).join('');
     }
     
-    // NEW: Handle deleting a gig
     gigHistoryContainer.addEventListener('click', e => {
         if (e.target.classList.contains('delete-gig-btn')) {
             if (confirm('Are you sure you want to delete this gig history?')) {
                 db.collection('users').doc(currentUser.uid).collection('gigs').doc(e.target.dataset.id).delete();
             }
+        }
+        if (e.target.classList.contains('toggle-transcript-btn')) {
+            const article = e.target.closest('article');
+            const transcriptContainer = article.querySelector('.full-transcript-container');
+            const isHidden = transcriptContainer.classList.toggle('d-none');
+            e.target.textContent = isHidden ? 'Show Transcript' : 'Hide Transcript';
         }
     });
 
@@ -157,7 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Drag and Drop Logic (copied from sets.js)
     let draggedElement = null;
     document.addEventListener('dragstart', e => {
         if (e.target.classList.contains('studio-bit')) {
