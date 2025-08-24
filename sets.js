@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     // --- END FIREBASE SETUP ---
 
-    // --- YOUR GOOGLE APPS SCRIPT URL ---
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxA6rI40DkfWndq1ESNLXJA6dlVSlW_2nJtgOC1BX0LLGXFZf_PWf1DSPM2UtBlLMMb/exec';
 
     const modal = document.getElementById('setlist-studio-modal');
@@ -196,8 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
         content += `Total Length: ${(setlist.bits || []).reduce((sum, bit) => sum + (bit.length || 0), 0)} minutes\n`;
         content += '--------------------\n\n';
         (setlist.bits || []).forEach(bit => {
-            content += `BIT: ${bit.title} (${bit.length} min)\n`;
-            content += `TAGS: ${(bit.tags || []).join(', ')}\n\n`;
+            content += `BIT: ${bit.title} (${bit.length} min)\n\n`;
+            // THIS IS THE MODIFIED PART: The "TAGS" line has been removed.
             content += `${bit.transcription || 'N/A'}\n\n`;
             content += '--------------------\n\n';
         });
