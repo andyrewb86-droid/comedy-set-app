@@ -111,3 +111,52 @@ nav a {
     padding: 1rem;
     border-radius: var(--border-radius);
 }
+
+/* Styles for Setlist Studio */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.bit-list {
+    min-height: 300px;
+    max-height: 50vh;
+    overflow-y: auto;
+    border: var(--card-border);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+}
+
+.studio-bit {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: var(--card-background-color);
+    border: var(--card-border);
+    cursor: grab;
+}
+
+.studio-bit p {
+    margin-bottom: 0;
+    font-size: 0.9em;
+}
+
+.studio-bit-transcript {
+    font-style: italic;
+    font-size: 0.8em;
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--primary);
+    white-space: pre-wrap;
+}
+
+.toggle-transcript-btn {
+    font-size: 0.7em;
+    margin-left: 0.5rem;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    color: var(--primary);
+    padding: 0;
+}
