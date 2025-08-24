@@ -1,12 +1,25 @@
-/* Custom styles that work with Pico.css */
+/* General App Styles */
 body {
-    padding: 1rem;
+    padding-bottom: 3rem;
+}
+
+main.container {
+    padding-top: 1rem;
 }
 
 nav a {
     text-decoration: none;
 }
 
+.text-center {
+    text-align: center;
+}
+
+.d-none {
+    display: none !important;
+}
+
+/* Tag Styles */
 .tag {
     display: inline-block;
     background-color: hsl(210, 50%, 90%);
@@ -18,13 +31,11 @@ nav a {
     margin-bottom: 5px;
 }
 
-.set-item, .gig-item, .show-item {
-    padding: 1rem;
-    background-color: var(--card-background-color);
-    border: var(--card-border);
-    border-radius: var(--card-border-radius);
-    box-shadow: var(--card-box-shadow);
-    margin-bottom: 1rem;
+/* Bit & Setlist Item Styles */
+.set-item-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .tags-display-view, .tags-edit-view {
@@ -32,33 +43,6 @@ nav a {
     align-items: center;
     gap: 10px;
     margin-top: 0.5rem;
-}
-
-.d-none {
-    display: none !important;
-}
-
-.draggable-bit {
-    padding: 1rem;
-    background-color: var(--card-background-color);
-    border: var(--card-border);
-    border-radius: var(--card-border-radius);
-    margin-bottom: 1rem;
-    cursor: grab;
-}
-.draggable-bit.dragging {
-    opacity: 0.5;
-}
-.draggable-bit p {
-    white-space: pre-wrap;
-    font-family: monospace;
-    background-color: var(--code-background-color);
-    padding: 1rem;
-    border-radius: var(--border-radius);
-}
-
-.text-center {
-    text-align: center;
 }
 
 .toggle-tags-btn {
@@ -70,19 +54,20 @@ nav a {
     cursor: pointer;
     font-size: 0.8em;
     margin-left: 5px;
-
 }
 
-/* Styles for Transcript Preview and Expansion */
+/* Transcription Preview and Expansion Styles */
 .transcript-preview-container {
-    max-height: 4.5em; /* Roughly 3 lines of text */
+    max-height: 4.5em; /* Approx 3 lines of text */
     overflow: hidden;
     transition: max-height 0.3s ease-in-out;
     position: relative;
+    white-space: pre-wrap;
+    font-style: italic;
+    color: var(--muted-color);
     padding-bottom: 1.5rem; /* Space for the fade-out effect */
 }
 
-/* Add a fade-out effect at the bottom when collapsed */
 .transcript-preview-container::after {
     content: '';
     position: absolute;
@@ -94,17 +79,35 @@ nav a {
     transition: opacity 0.3s ease-in-out;
 }
 
-/* This class will be toggled by JavaScript */
 .transcript-preview-container.expanded {
     max-height: 1000px; /* A large value to allow full expansion */
+    font-style: normal;
+    color: var(--color);
+    padding-bottom: 0;
 }
 
 .transcript-preview-container.expanded::after {
-    opacity: 0; /* Hide the fade-out effect when expanded */
+    opacity: 0;
 }
 
-.transcript-preview-text {
+/* Drag and Drop Styles (for Sets page) */
+.draggable-bit {
+    padding: 1rem;
+    background-color: var(--card-background-color);
+    border: var(--card-border);
+    border-radius: var(--card-border-radius);
+    margin-bottom: 1rem;
+    cursor: grab;
+}
+
+.draggable-bit.dragging {
+    opacity: 0.5;
+}
+
+.draggable-bit p {
     white-space: pre-wrap;
-    font-style: italic;
-    color: var(--muted-color);
+    font-family: monospace;
+    background-color: var(--code-background-color);
+    padding: 1rem;
+    border-radius: var(--border-radius);
 }
