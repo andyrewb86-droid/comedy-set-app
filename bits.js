@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- START FIREBASE SETUP ---
     const firebaseConfig = {
       apiKey: "AIzaSyAl55bFL__bGedFYLXFDHGt47tDi90WRpY",
       authDomain: "comedy-set-manager.firebaseapp.com",
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    // --- END FIREBASE SETUP ---
 
     const setListContainer = document.getElementById('set-list-container');
     const searchLengthInput = document.getElementById('search-length');
@@ -28,26 +30,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadUserSets(userId) {
-        db.collection('users').doc(userId).collection('sets').orderBy('title').onSnapshot(snapshot => {
+        const setsCollection = db.collection('users').doc(userId).collection('sets');
+        setsCollection.orderBy('title').onSnapshot(snapshot => {
             comedySets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             filterAndRender();
         });
     }
 
     const renderSets = (setsToRender) => {
+        if (!setListContainer) return;
         setListContainer.innerHTML = '';
         if (!setsToRender || setsToRender.length === 0) {
-            setListContainer.innerHTML = '<article><p>No bits found.</p></article>';
+            setListContainer.innerHTML = '<article><p>No bits found. Try adding some on the Dashboard!</p></article>';
             return;
         }
-        setsToRender.forEach(set => {
+
+        setsToRender.forEach((set) => {
             const setElement = document.createElement('article');
             setElement.className = 'set-item';
             setElement.setAttribute('data-id', set.id);
+            
             const transcriptionText = set.transcription || '';
+            const hasTranscription = transcriptionText.trim() !== '';
             const tags = set.tags || [];
             const tagsText = tags.join(', ');
-            const transcriptToggleBtn = transcriptionText ? `<button class="toggle-transcript-btn">(show transcript)</button>` : '';
+
+            const transcriptToggleBtn = hasTranscription ? `<button class="toggle-transcript-btn">(show transcript)</button>` : '';
 
             setElement.innerHTML = `
                 <div class="set-item-main">
@@ -67,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <button class="delete-btn">Delete</button>
                 </div>
+                
                 <div class="full-transcript-container d-none">
                     <p style="white-space: pre-wrap;">${transcriptionText}</p>
                     <button class="edit-btn secondary outline">Edit</button>
@@ -81,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const filterAndRender = () => {
+        if (!searchLengthInput || !searchTagsInput) return;
         const lengthQuery = parseFloat(searchLengthInput.value);
         const tagsQuery = searchTagsInput.value.toLowerCase().trim();
         const filteredSets = comedySets.filter(set => {
