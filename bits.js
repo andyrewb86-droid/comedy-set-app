@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderSets = (setsToRender) => {
         if (!setListContainer) return;
-        
         setListContainer.innerHTML = '';
         if (!setsToRender || setsToRender.length === 0) {
             setListContainer.innerHTML = '<article><p>No bits found. Try adding some on the Dashboard!</p></article>';
@@ -56,50 +55,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const tags = set.tags || [];
             const tagsText = tags.join(', ');
 
-            let tagsHTML = '';
-            const maxTagsToShow = 5;
-            if (tags.length > maxTagsToShow) {
-                const truncatedTags = tags.slice(0, maxTagsToShow).map(tag => `<span class="tag">${tag}</span>`).join(' ');
-                const fullTags = tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
-                const remainingCount = tags.length - maxTagsToShow;
-                tagsHTML = `
-                    <span class="tags-truncated">${truncatedTags}<button class="toggle-tags-btn">+ ${remainingCount} more</button></span>
-                    <span class="tags-full d-none">${fullTags}<button class="toggle-tags-btn">Show Less</button></span>
-                `;
-            } else {
-                tagsHTML = tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags';
-            }
-            
-            let transcriptionHTML = '';
-            if(hasTranscription) {
-                transcriptionHTML = `
-                    <div class="transcription-display">
-                        <div class="transcript-preview-container">
-                            <p class="transcript-preview-text">${transcriptionText}</p>
-                        </div>
-                        <div class="grid" style="--grid-cols: auto auto; margin-top: 0.5rem; justify-content: start; gap: 1rem;">
-                            <button class="toggle-transcript-btn secondary outline">Show More</button>
-                            <button class="edit-btn secondary outline">Edit</button>
-                        </div>
-                    </div>
-                `;
-            } else {
-                transcriptionHTML = `
-                    <div class="transcription-display">
-                        <p class="transcript-preview-text">No transcription added yet.</p>
-                        <button class="edit-btn secondary outline" style="margin-top: 0.5rem;">Add Transcription</button>
-                    </div>
-                `;
-            }
+            const transcriptToggleBtn = hasTranscription ? `<button class="toggle-transcript-btn">(show transcript)</button>` : '';
 
             setElement.innerHTML = `
                 <div class="set-item-main">
                     <div>
-                        <h5>${set.title}</h5>
+                        <h5>${set.title} ${transcriptToggleBtn}</h5>
                         <p><strong>Length:</strong> ${set.length} min</p>
                         <div class="tags-container">
                             <div class="tags-display-view">
-                                <p><strong>Tags:</strong> ${tagsHTML}</p>
+                                <p><strong>Tags:</strong> ${tags.length > 0 ? tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') : 'No tags'}</p>
                                 <button class="edit-tags-btn secondary outline">Edit</button>
                             </div>
                             <div class="tags-edit-view d-none">
@@ -111,12 +76,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="delete-btn secondary outline">Delete</button>
                 </div>
                 
-                <div class="transcription-section mt-2">
-                    ${transcriptionHTML}
-                    <div class="transcription-edit d-none">
-                        <textarea>${transcriptionText}</textarea>
-                        <button class="save-btn">Save</button>
-                    </div>
+                <div class="full-transcript-container d-none">
+                    <p style="white-space: pre-wrap;">${transcriptionText}</p>
+                    <button class="edit-btn secondary outline">Edit</button>
+                </div>
+                <div class="transcription-edit d-none">
+                    <textarea>${transcriptionText}</textarea>
+                    <button class="save-btn">Save</button>
                 </div>
             `;
             setListContainer.appendChild(setElement);
@@ -146,28 +112,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const docId = setItem.getAttribute('data-id');
         const userSetsCollection = db.collection('users').doc(currentUser.uid).collection('sets');
 
-        // --- THIS IS THE CORRECTED AND ADDED LOGIC ---
         if (target.classList.contains('toggle-transcript-btn')) {
-            const container = setItem.querySelector('.transcript-preview-container');
-            const isExpanded = container.classList.toggle('expanded');
-            target.textContent = isExpanded ? 'Show Less' : 'Show More';
-        }
-        // --- END OF FIX ---
-
-        if (target.classList.contains('edit-btn')) {
-            setItem.querySelector('.transcription-display').classList.add('d-none');
-            setItem.querySelector('.transcription-edit').classList.remove('d-none');
+            const transcriptContainer = setItem.querySelector('.full-transcript-container');
+            const isHidden = transcriptContainer.classList.toggle('d-none');
+            target.textContent = isHidden ? '(show transcript)' : '(hide transcript)';
         }
 
-        if (target.classList.contains('save-btn') && !target.classList.contains('save-tags-btn')) {
-            const newTranscription = setItem.querySelector('.transcription-edit textarea').value;
-            userSetsCollection.doc(docId).update({ transcription: newTranscription });
-        }
-
-        if (target.classList.contains('toggle-tags-btn')) {
-            setItem.querySelector('.tags-truncated').classList.toggle('d-none');
-            setItem.querySelector('.tags-full').classList.toggle('d-none');
-        }
         if (target.classList.contains('edit-tags-btn')) {
             setItem.querySelector('.tags-display-view').classList.add('d-none');
             setItem.querySelector('.tags-edit-view').classList.remove('d-none');
@@ -178,6 +128,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (target.classList.contains('delete-btn')) {
             if (confirm('Are you sure?')) userSetsCollection.doc(docId).delete();
+        }
+        if (target.classList.contains('edit-btn')) {
+            setItem.querySelector('.full-transcript-container').classList.add('d-none');
+            setItem.querySelector('.transcription-edit').classList.remove('d-none');
+        }
+        if (target.classList.contains('save-btn') && !target.classList.contains('save-tags-btn')) {
+            const newTranscription = setItem.querySelector('.transcription-edit textarea').value;
+            userSetsCollection.doc(docId).update({ transcription: newTranscription });
         }
     });
 });
