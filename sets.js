@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     // --- END FIREBASE SETUP ---
 
+    // --- YOUR GOOGLE APPS SCRIPT URL ---
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxA6rI40DkfWndq1ESNLXJA6dlVSlW_2nJtgOC1BX0LLGXFZf_PWf1DSPM2UtBlLMMb/exec';
+
     const modal = document.getElementById('setlist-studio-modal');
     const modalTitle = document.getElementById('studio-modal-title');
     const setlistTitleInput = document.getElementById('studio-setlist-title');
@@ -58,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p>Total Length: ${totalLength} min | Bits: ${(setlist.bits || []).length}</p>
                     </div>
                     <div style="text-align: right;">
+                        <button class="export-docs-btn secondary" data-id="${setlist.id}">Export</button>
                         <button class="edit-setlist-btn" data-id="${setlist.id}">Edit</button>
                         <button class="delete-setlist-btn secondary outline" data-id="${setlist.id}">Delete</button>
                     </div>
@@ -71,20 +75,17 @@ document.addEventListener('DOMContentLoaded', () => {
         currentlyEditingSetId = setlist ? setlist.id : null;
         modalTitle.textContent = setlist ? 'Edit Setlist' : 'Create Setlist';
         setlistTitleInput.value = setlist ? setlist.title : '';
-        
         currentSetlistContainer.innerHTML = '';
         if (setlist && setlist.bits) {
             setlist.bits.forEach(bit => {
                 currentSetlistContainer.appendChild(createStudioBitElement(bit));
             });
         }
-        
         availableBitsContainer.innerHTML = '';
         const currentBitIds = (setlist && setlist.bits) ? setlist.bits.map(b => b.id) : [];
         allBits.filter(bit => !currentBitIds.includes(bit.id)).forEach(bit => {
             availableBitsContainer.appendChild(createStudioBitElement(bit));
         });
-
         modal.setAttribute('open', true);
     }
     
@@ -93,12 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el.className = 'studio-bit';
         el.setAttribute('draggable', true);
         el.dataset.bitId = bit.id;
-        
-        const transcriptHTML = bit.transcription ? `
-            <button class="toggle-transcript-btn">(show transcript)</button>
-            <div class="studio-bit-transcript d-none">${bit.transcription}</div>
-        ` : '';
-
+        const transcriptHTML = bit.transcription ? `<button class="toggle-transcript-btn">(show transcript)</button><div class="studio-bit-transcript d-none">${bit.transcription}</div>` : '';
         el.innerHTML = `<div><span class="drag-handle">☰</span><strong>${bit.title}</strong> (${bit.length} min) ${transcriptHTML}</div>`;
         return el;
     }
@@ -106,18 +102,22 @@ document.addEventListener('DOMContentLoaded', () => {
     createNewSetBtn.addEventListener('click', () => openStudio());
 
     setlistsContainer.addEventListener('click', e => {
-        if (e.target.classList.contains('edit-setlist-btn')) {
-            const setlist = allSetlists.find(s => s.id === e.target.dataset.id);
+        const target = e.target;
+        if (target.classList.contains('export-docs-btn')) {
+            const setlist = allSetlists.find(s => s.id === target.dataset.id);
+            exportToGoogleDocs(setlist, target);
+        }
+        if (target.classList.contains('edit-setlist-btn')) {
+            const setlist = allSetlists.find(s => s.id === target.dataset.id);
             openStudio(setlist);
         }
-        if (e.target.classList.contains('delete-setlist-btn')) {
+        if (target.classList.contains('delete-setlist-btn')) {
             if (confirm('Are you sure you want to delete this setlist?')) {
-                db.collection('users').doc(currentUser.uid).collection('setlists').doc(e.target.dataset.id).delete();
+                db.collection('users').doc(currentUser.uid).collection('setlists').doc(target.dataset.id).delete();
             }
         }
     });
 
-    // --- Drag and Drop Logic ---
     let draggedElement = null;
     document.addEventListener('dragstart', e => {
         if (e.target.classList.contains('studio-bit')) {
@@ -152,25 +152,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
+            return (offset < 0 && offset > closest.offset) ? { offset: offset, element: child } : closest;
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
     
-    // --- Modal Click and Save Logic ---
     modal.addEventListener('click', e => {
-        const target = e.target;
-        if (target.classList.contains('close')) {
-            modal.removeAttribute('open');
-        }
-        if (target.classList.contains('toggle-transcript-btn')) {
-            const transcriptDiv = target.parentElement.querySelector('.studio-bit-transcript');
+        if (e.target.classList.contains('close')) modal.removeAttribute('open');
+        if (e.target.classList.contains('toggle-transcript-btn')) {
+            const transcriptDiv = e.target.parentElement.querySelector('.studio-bit-transcript');
             if (transcriptDiv) {
                 const isHidden = transcriptDiv.classList.toggle('d-none');
-                target.textContent = isHidden ? '(show transcript)' : '(hide transcript)';
+                e.target.textContent = isHidden ? '(show transcript)' : '(hide transcript)';
             }
         }
     });
@@ -185,10 +177,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const bitsInSet = Array.from(bitElements).map(el => {
             return allBits.find(b => b.id === el.dataset.bitId);
         }).filter(Boolean);
-
         const setlistData = { title: title, bits: bitsInSet };
         const userSetlists = db.collection('users').doc(currentUser.uid).collection('setlists');
-
         if (currentlyEditingSetId) {
             userSetlists.doc(currentlyEditingSetId).update(setlistData);
         } else {
@@ -196,4 +186,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         modal.removeAttribute('open');
     });
+
+    function exportToGoogleDocs(setlist, buttonElement) {
+        if (GOOGLE_SCRIPT_URL === 'YOUR_WEB_APP_URL_HERE') {
+            alert('Please paste your Google Apps Script URL into the sets.js file.');
+            return;
+        }
+        let content = `${setlist.title}\n`;
+        content += `Total Length: ${(setlist.bits || []).reduce((sum, bit) => sum + (bit.length || 0), 0)} minutes\n`;
+        content += '--------------------\n\n';
+        (setlist.bits || []).forEach(bit => {
+            content += `BIT: ${bit.title} (${bit.length} min)\n`;
+            content += `TAGS: ${(bit.tags || []).join(', ')}\n\n`;
+            content += `${bit.transcription || 'N/A'}\n\n`;
+            content += '--------------------\n\n';
+        });
+
+        const originalButtonText = buttonElement.textContent;
+        buttonElement.textContent = 'Exporting...';
+        buttonElement.setAttribute('aria-busy', 'true');
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ title: setlist.title, content: content }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert(`Successfully created Google Doc! You can find it in your Google Drive.`);
+                window.open(data.url, '_blank');
+            } else {
+                alert('An error occurred. Check the console for details.');
+                console.error(data.message);
+            }
+        })
+        .catch(error => {
+            alert('A network error occurred. Check the console for details.');
+            console.error(error);
+        })
+        .finally(() => {
+            buttonElement.textContent = originalButtonText;
+            buttonElement.removeAttribute('aria-busy');
+        });
+    }
 });
