@@ -20,30 +20,40 @@
                 <li><a href="history.html" role="button" class="secondary outline">Gig History</a></li>
             </ul>
         </nav>
-        <h1 class="text-center">My Setlists 📜</h1>
-        <article>
-            <h4>Create a New Setlist</h4>
-            <form id="add-setlist-form" class="grid">
-                <input type="text" id="setlist-title" placeholder="Setlist Name (e.g., 'Club Set - 10 Mins')" required>
-                <button type="submit">Create Setlist</button>
-            </form>
-        </article>
-        <div id="setlists-container"></div>
+        <header class="page-header">
+            <h1 class="text-center">My Setlists 📜</h1>
+            <button id="create-new-set-btn">Create a New Setlist</button>
+        </header>
+        
+        <div id="setlists-container">
+            </div>
     </main>
 
-    <div class="modal" id="arrangeSetModal">
-      <article>
-        <header>
-          <a href="#close" aria-label="Close" class="close"></a>
-          <h5 id="arrangeModalTitle">Arrange Set</h5>
-        </header>
-        <p>Drag and drop the bits to reorder your set.</p>
-        <div id="arrange-container"></div>
-        <footer>
-          <button id="save-order-btn">Save Order</button>
-        </footer>
-      </article>
-    </div>
+    <dialog id="setlist-studio-modal">
+        <article>
+            <header>
+                <a href="#close" aria-label="Close" class="close"></a>
+                <h4 id="studio-modal-title">Create Setlist</h4>
+            </header>
+            
+            <input type="text" id="studio-setlist-title" placeholder="Name your setlist (e.g., 'Club Headliner - 20 min')" required>
+
+            <div class="grid">
+                <div id="studio-available-bits">
+                    <h5>Available Bits (Drag to add)</h5>
+                    <div class="bit-list" id="available-bits-container"></div>
+                </div>
+                <div id="studio-current-setlist">
+                    <h5>Current Setlist (Drag to reorder)</h5>
+                    <div class="bit-list" id="current-setlist-container"></div>
+                </div>
+            </div>
+
+            <footer>
+                <button id="save-setlist-btn" class="contrast">Save Setlist</button>
+            </footer>
+        </article>
+    </dialog>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
