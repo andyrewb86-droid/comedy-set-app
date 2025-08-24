@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             parsedPerformanceData.fullTranscript = transcript;
 
-            analysisLinkInput.value = ''; // Clear previous link
+            analysisLinkInput.value = '';
             availableBitsContainer.innerHTML = allUserBits.map(bit => `
                 <div class="available-bit-item">
                     <input type="checkbox" data-bit-id="${bit.id}" id="check-${bit.id}">
@@ -110,13 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return allUserBits.find(b => b.id === el.dataset.bitId);
         });
 
-        // Get the value from the new analysis link input
         const analysisLink = analysisLinkInput.value.trim();
 
         const performanceToSave = { 
             ...parsedPerformanceData, 
             linkedBits: orderedBits, 
-            analysisLink: analysisLink, // Add the new field
+            analysisLink: analysisLink,
             createdAt: new Date() 
         };
 
@@ -159,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }
             
-            // NEW: Add a button for the analysis link if it exists
             let analysisLinkHTML = '';
             if (gig.analysisLink) {
                 analysisLinkHTML = `<a href="${gig.analysisLink}" target="_blank" role="button" class="contrast outline">View Analysis Page</a>`;
@@ -201,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Drag and Drop Logic (unchanged)
+    // Drag and Drop Logic
     let draggedElement = null;
     document.addEventListener('dragstart', e => {
         if (e.target.classList.contains('studio-bit')) {
