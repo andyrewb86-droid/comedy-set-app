@@ -24,13 +24,9 @@
         <h1>Performance History 📓</h1>
         
         <article>
-            <h4>Upload AI Performance Report</h4>
-            <p>Upload the .txt file from your transcription service to automatically log a gig.</p>
+            <h4>Upload Performance Report</h4>
+            <p>Upload the .txt file from your transcription service to log a gig and link the bits you performed.</p>
             <input type="file" id="upload-performance-file" accept=".txt">
-            <div id="analysis-section" class="d-none">
-                <input type="text" id="gemini-api-key" placeholder="Enter Your Gemini API Key Here">
-                <button id="analyze-with-gemini-btn">Analyze Setlist with Gemini</button>
-            </div>
         </article>
 
         <div id="gig-history-container"></div>
@@ -48,7 +44,7 @@
                     <div id="modal-transcript" class="transcript-preview"></div>
                 </div>
                 <div>
-                    <h6>Select Bits Performed (Gemini's suggestions are pre-checked)</h6>
+                    <h6>Select Bits Performed</h6>
                     <div id="modal-bits-checklist"></div>
                 </div>
             </div>
