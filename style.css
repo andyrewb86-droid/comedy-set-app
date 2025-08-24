@@ -19,19 +19,19 @@ nav a {
     display: none !important;
 }
 
-/* --- NEW DELETE BUTTON STYLES --- */
+/* --- CORRECTED DELETE BUTTON STYLES --- */
 .delete-btn, .delete-setlist-btn, .delete-gig-btn {
-    --pico-font-size: 0.8rem;
-    --pico-padding: 0.375rem 0.75rem;
+    font-size: 0.8rem; /* Use standard CSS property */
+    padding: 0.375rem 0.75rem; /* Use standard CSS property */
     background-color: var(--pico-color-red-500);
     border-color: var(--pico-color-red-500);
     color: #fff;
 }
 .delete-btn:hover, .delete-setlist-btn:hover, .delete-gig-btn:hover {
-    --pico-background-color: var(--pico-color-red-600);
-    --pico-border-color: var(--pico-color-red-600);
+    background-color: var(--pico-color-red-600);
+    border-color: var(--pico-color-red-600);
 }
-/* --- END OF NEW STYLES --- */
+/* --- END OF CORRECTION --- */
 
 
 /* Tag Styles */
