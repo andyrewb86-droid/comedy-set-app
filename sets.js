@@ -21,8 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSetlistBtn = document.getElementById('save-setlist-btn');
     const createNewSetBtn = document.getElementById('create-new-set-btn');
     const setlistsContainer = document.getElementById('setlists-container');
-    const studioSearchTitle = document.getElementById('studio-search-title');
-    const studioSearchLength = document.getElementById('studio-search-length');
     
     let currentUser = null;
     let allBits = [];
@@ -73,38 +71,21 @@ document.addEventListener('DOMContentLoaded', () => {
         currentlyEditingSetId = setlist ? setlist.id : null;
         modalTitle.textContent = setlist ? 'Edit Setlist' : 'Create Setlist';
         setlistTitleInput.value = setlist ? setlist.title : '';
-        studioSearchTitle.value = '';
-        studioSearchLength.value = '';
-
-        renderCurrentSetlist(setlist ? setlist.bits : []);
-        renderAvailableBits();
-        modal.setAttribute('open', true);
-    }
-    
-    function renderCurrentSetlist(bits = []) {
+        
         currentSetlistContainer.innerHTML = '';
-        bits.forEach(bit => {
-            currentSetlistContainer.appendChild(createStudioBitElement(bit));
-        });
-    }
-
-    function renderAvailableBits() {
-        const titleQuery = studioSearchTitle.value.toLowerCase();
-        const lengthQuery = parseFloat(studioSearchLength.value);
-        const currentBitElements = currentSetlistContainer.querySelectorAll('.studio-bit');
-        const currentBitIds = Array.from(currentBitElements).map(el => el.dataset.bitId);
-
-        const filteredBits = allBits.filter(bit => {
-            if (currentBitIds.includes(bit.id)) return false;
-            const titleMatch = !titleQuery || bit.title.toLowerCase().includes(titleQuery);
-            const lengthMatch = isNaN(lengthQuery) || (bit.length >= lengthQuery - 2 && bit.length <= lengthQuery + 2);
-            return titleMatch && lengthMatch;
-        });
-
+        if (setlist && setlist.bits) {
+            setlist.bits.forEach(bit => {
+                currentSetlistContainer.appendChild(createStudioBitElement(bit));
+            });
+        }
+        
         availableBitsContainer.innerHTML = '';
-        filteredBits.forEach(bit => {
+        const currentBitIds = (setlist && setlist.bits) ? setlist.bits.map(b => b.id) : [];
+        allBits.filter(bit => !currentBitIds.includes(bit.id)).forEach(bit => {
             availableBitsContainer.appendChild(createStudioBitElement(bit));
         });
+
+        modal.setAttribute('open', true);
     }
     
     function createStudioBitElement(bit) {
@@ -112,13 +93,17 @@ document.addEventListener('DOMContentLoaded', () => {
         el.className = 'studio-bit';
         el.setAttribute('draggable', true);
         el.dataset.bitId = bit.id;
-        const transcriptHTML = bit.transcription ? `<button class="toggle-transcript-btn">(show transcript)</button><div class="studio-bit-transcript d-none">${bit.transcription}</div>` : '';
-        el.innerHTML = `<p><span class="drag-handle">☰</span><strong>${bit.title}</strong> (${bit.length} min) ${transcriptHTML}</p>`;
+        
+        const transcriptHTML = bit.transcription ? `
+            <button class="toggle-transcript-btn">(show transcript)</button>
+            <div class="studio-bit-transcript d-none">${bit.transcription}</div>
+        ` : '';
+
+        // THIS IS THE CORRECTED LINE: Changed the surrounding <p> to a <div>
+        el.innerHTML = `<div><span class="drag-handle">☰</span><strong>${bit.title}</strong> (${bit.length} min) ${transcriptHTML}</div>`;
         return el;
     }
 
-    studioSearchTitle.addEventListener('input', renderAvailableBits);
-    studioSearchLength.addEventListener('input', renderAvailableBits);
     createNewSetBtn.addEventListener('click', () => openStudio());
 
     setlistsContainer.addEventListener('click', e => {
@@ -147,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
         }
     });
-
     [availableBitsContainer, currentSetlistContainer].forEach(container => {
         container.addEventListener('dragover', e => {
             e.preventDefault();
@@ -161,12 +145,14 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (draggedElement) {
                 const afterElement = getDragAfterElement(container, e.clientY);
-                container.insertBefore(draggedElement, afterElement);
-                renderAvailableBits();
+                if (afterElement == null) {
+                    container.appendChild(draggedElement);
+                } else {
+                    container.insertBefore(draggedElement, afterElement);
+                }
             }
         });
     });
-
     function getDragAfterElement(container, y) {
         const draggableElements = [...container.querySelectorAll('.studio-bit:not([style*="opacity: 0.5"])')];
         return draggableElements.reduce((closest, child) => {
@@ -181,7 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     modal.addEventListener('click', e => {
-        if (e.target.classList.contains('close')) modal.removeAttribute('open');
+        if (e.target.classList.contains('close')) {
+            modal.removeAttribute('open');
+        }
         if (e.target.classList.contains('toggle-transcript-btn')) {
             const transcriptDiv = e.target.parentElement.querySelector('.studio-bit-transcript');
             if (transcriptDiv) {
