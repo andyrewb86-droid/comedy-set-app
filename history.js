@@ -37,7 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
         db.collection('users').doc(userId).collection('sets').orderBy('title').onSnapshot(snapshot => {
             allUserBits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         });
-        db.collection('users').doc(userId).collection('gigs').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        
+        // THIS IS THE CORRECTED LINE: Sort by 'recordedDate'
+        db.collection('users').doc(userId).collection('gigs').orderBy('recordedDate', 'desc').onSnapshot(snapshot => {
             renderGigHistory(snapshot.docs);
         });
     }
@@ -54,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             parsedPerformanceData = {};
             const lines = transcript.split('\n');
+            // This line correctly parses the date from the file
             parsedPerformanceData.recordedDate = new Date(lines.find(l => l.startsWith('Recorded:')).split(': ')[1].trim());
             parsedPerformanceData.venue = lines[0].trim();
             parsedPerformanceData.stats = {
@@ -106,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const orderedBits = Array.from(orderedBitElements).map(el => {
             return allUserBits.find(b => b.id === el.dataset.bitId);
         });
+        // We add 'createdAt' for internal tracking, but 'recordedDate' is used for display and sorting
         const performanceToSave = { ...parsedPerformanceData, linkedBits: orderedBits, createdAt: new Date() };
 
         db.collection('users').doc(currentUser.uid).collection('gigs').add(performanceToSave)
@@ -123,7 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         gigHistoryContainer.innerHTML = gigDocs.map(doc => {
             const gig = doc.data();
-            const gigDate = gig.createdAt.toDate().toLocaleDateString();
+            // This now correctly uses the date from the file
+            const gigDate = gig.recordedDate.toDate().toLocaleDateString();
             const setlist = (gig.linkedBits || []).map(bit => `<li>${bit.title}</li>`).join('');
             
             let statsHTML = '';
