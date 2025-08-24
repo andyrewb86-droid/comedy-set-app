@@ -70,4 +70,41 @@ nav a {
     cursor: pointer;
     font-size: 0.8em;
     margin-left: 5px;
+
+}
+
+/* Styles for Transcript Preview and Expansion */
+.transcript-preview-container {
+    max-height: 4.5em; /* Roughly 3 lines of text */
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+    position: relative;
+    padding-bottom: 1.5rem; /* Space for the fade-out effect */
+}
+
+/* Add a fade-out effect at the bottom when collapsed */
+.transcript-preview-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2rem;
+    background: linear-gradient(to bottom, transparent, var(--card-background-color));
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* This class will be toggled by JavaScript */
+.transcript-preview-container.expanded {
+    max-height: 1000px; /* A large value to allow full expansion */
+}
+
+.transcript-preview-container.expanded::after {
+    opacity: 0; /* Hide the fade-out effect when expanded */
+}
+
+.transcript-preview-text {
+    white-space: pre-wrap;
+    font-style: italic;
+    color: var(--muted-color);
 }
