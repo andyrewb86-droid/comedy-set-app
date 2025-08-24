@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gig History - Comedy Set Manager</title>
+    <title>Performance History - Comedy Set Manager</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
     <link rel="stylesheet" href="style.css">
 </head>
@@ -20,36 +20,43 @@
                 <li><a href="history.html" role="button" class="contrast">Gig History</a></li>
             </ul>
         </nav>
-        <h1 class="text-center">Gig History 📓</h1>
+
+        <h1>Performance History 📓</h1>
+        
         <article>
             <h4>Upload AI Performance Report</h4>
             <p>Upload the .txt file from your transcription service to automatically log a gig.</p>
             <input type="file" id="upload-performance-file" accept=".txt">
+            <div id="analysis-section" class="d-none">
+                <input type="text" id="gemini-api-key" placeholder="Enter Your Gemini API Key Here">
+                <button id="analyze-with-gemini-btn">Analyze Setlist with Gemini</button>
+            </div>
         </article>
+
         <div id="gig-history-container"></div>
     </main>
-    
-    <div class="modal" id="linkBitsModal">
-      <article>
-        <header>
-          <a href="#close" aria-label="Close" class="close"></a>
-          <h5>Link Bits to Your Performance</h5>
-        </header>
-        <div class="grid">
-            <div>
-                <h6>Transcript</h6>
-                <div id="modal-transcript" class="transcript-preview"></div>
+
+    <dialog id="linkBitsModal">
+        <article>
+            <header>
+                <a href="#close" aria-label="Close" class="close"></a>
+                <h5>Link Bits to Your Performance</h5>
+            </header>
+            <div class="grid">
+                <div>
+                    <h6>Transcript</h6>
+                    <div id="modal-transcript" class="transcript-preview"></div>
+                </div>
+                <div>
+                    <h6>Select Bits Performed (Gemini's suggestions are pre-checked)</h6>
+                    <div id="modal-bits-checklist"></div>
+                </div>
             </div>
-            <div>
-                <h6>Select Bits Performed</h6>
-                <div id="modal-bits-checklist"></div>
-            </div>
-        </div>
-        <footer>
-          <button id="save-performance-btn">Save Performance</button>
-        </footer>
-      </article>
-    </div>
+            <footer>
+                <button id="save-performance-btn">Save Performance</button>
+            </footer>
+        </article>
+    </dialog>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
