@@ -160,3 +160,19 @@ nav a {
     color: var(--primary);
     padding: 0;
 }
+
+/* Styles for an improved Drag and Drop experience */
+.drag-handle {
+    cursor: grab;
+    margin-right: 10px;
+    color: var(--muted-border-color);
+    touch-action: none; /* Helps with touch devices */
+}
+
+/* This class creates the "move out of the way" effect */
+.drag-over {
+    border-top: 2px solid var(--primary);
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+}
+
